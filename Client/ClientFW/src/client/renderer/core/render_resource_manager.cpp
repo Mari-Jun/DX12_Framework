@@ -10,6 +10,8 @@
 #include "client/asset/texture/texture_loader.h"
 #include "client/util/upload_buffer.h"
 
+#include <client/imgui/imgui_impl_dx12.h>
+
 namespace client_fw
 {
 	RenderResourceManager* RenderResourceManager::s_render_resource_manager = nullptr;
@@ -26,7 +28,8 @@ namespace client_fw
 	bool RenderResourceManager::Initialize(ID3D12Device* device)
 	{
 		D3D12_DESCRIPTOR_HEAP_DESC texture_heap_desc;
-		texture_heap_desc.NumDescriptors = MAX_2D_TEXTURE_RESOURCE_SIZE + MAX_CUBE_TEXTURE_RESOURCE_SIZE + MAX_ARRAY_TEXTURE_RESOURCE_SIZE;
+		texture_heap_desc.NumDescriptors = MAX_2D_TEXTURE_RESOURCE_SIZE + MAX_CUBE_TEXTURE_RESOURCE_SIZE +
+			MAX_ARRAY_TEXTURE_RESOURCE_SIZE + IMGUI_NUM_FRAMES_IN_FLIGHT;
 		texture_heap_desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 		texture_heap_desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 		texture_heap_desc.NodeMask = 0;
@@ -44,6 +47,19 @@ namespace client_fw
 			m_num_of_render_cube_map_texture_data = START_INDEX_RENDER_CUBE_MAP_TEXTURE;
 			m_num_of_render_array_texture_data = START_INDEX_RENDER_ARRAY_TEXTURE;
 			});
+
+		CD3DX12_CPU_DESCRIPTOR_HANDLE cpu_handle(m_texture_desciptor_heap->GetCPUDescriptorHandleForHeapStart());
+		cpu_handle.Offset(START_INDEX_IMGUI, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
+		CD3DX12_GPU_DESCRIPTOR_HANDLE gpu_handle(m_texture_desciptor_heap->GetGPUDescriptorHandleForHeapStart());
+		gpu_handle.Offset(START_INDEX_IMGUI, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
+
+		if (ImGui_ImplDX12_Init(device, IMGUI_NUM_FRAMES_IN_FLIGHT, DXGI_FORMAT_R8G8B8A8_UNORM,
+			m_texture_desciptor_heap.Get(), cpu_handle, gpu_handle) == false)
+		{
+			LOG_ERROR("Could not initialize imgui DX12");
+			return false;
+		}
+		
 
 		return true;
 	}

@@ -1,4 +1,4 @@
-workspace "Revive"
+workspace "DX12Framework"
 	architecture "x64"
 	startproject "RenderTest"
 

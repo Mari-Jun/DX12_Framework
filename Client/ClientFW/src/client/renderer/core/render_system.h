@@ -17,6 +17,7 @@ namespace client_fw
 	class ShadowCameraManager;
 	class LightComponent;
 	class LightManager;
+	class ImGuiSystem;
 
 	class RenderSystem final
 	{
@@ -97,6 +98,8 @@ namespace client_fw
 		UPtr<RenderCameraManager> m_render_camera_manager;
 		UPtr<ShadowCameraManager> m_shadow_camera_manager;
 		UPtr<LightManager> m_light_manager;
+
+		UPtr<ImGuiSystem> m_imgui_system;
 
 	public:
 		ID3D12Device* GetDevice() const { return m_device; }

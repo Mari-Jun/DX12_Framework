@@ -8,10 +8,12 @@ namespace client_fw
 #define START_INDEX_RENDER_CUBE_MAP_TEXTURE		20000		//Render Cube Map Texture를 2000개까지 지원
 #define START_INDEX_EXTERNAL_CUBE_MAP_TEXTURE	22000		//External_Cube Map Texture를 500개까지 지원
 #define START_INDEX_RENDER_ARRAY_TEXTURE		22500		//Render Cube Map Texture를 500개까지 지원
+#define START_INDEX_IMGUI						23000
 
 #define MAX_2D_TEXTURE_RESOURCE_SIZE		20000
 #define MAX_CUBE_TEXTURE_RESOURCE_SIZE		2500
 #define MAX_ARRAY_TEXTURE_RESOURCE_SIZE		500
+#define IMGUI_NUM_FRAMES_IN_FLIGHT			3
 
 	class Primitive;
 	class Mesh;

@@ -25,6 +25,7 @@
 #include "client/renderer/core/render_camera_manager.h"
 #include "client/renderer/core/shadow_camera_manager.h"
 #include "client/renderer/core/light_manager.h"
+#include "client/renderer/imgui/imgui_system.h"
 
 #include "client/object/component/core/render_component.h"
 #include "client/object/component/mesh/core/mesh_component.h"
@@ -56,6 +57,7 @@ namespace client_fw
 		m_render_camera_manager = CreateUPtr<RenderCameraManager>();
 		m_shadow_camera_manager = CreateUPtr<ShadowCameraManager>();
 		m_light_manager = CreateUPtr<LightManager>();
+		m_imgui_system = CreateUPtr<ImGuiSystem>();
 	}
 
 	RenderSystem::~RenderSystem()
@@ -119,6 +121,7 @@ namespace client_fw
 		ret &= RegisterGraphicsShader<MainCameraUIShader>("main camera ui", { eRenderLevelType::kFinalView });
 		ret &= RegisterGraphicsShader<UIShader>("ui", { eRenderLevelType::kUI });
 
+		ret &= m_imgui_system->Initialize(device, m_window.lock()->hWnd);
 		ret &= m_render_asset_manager->Initialize(device);
 
 		return ret;
@@ -131,6 +134,7 @@ namespace client_fw
 		for (const auto& [name, shader] : m_graphics_shaders)
 			shader->Shutdown();
 		m_graphics_super_root_signature->Shutdown();
+		m_imgui_system->Shutdown();
 		m_render_asset_manager->Shutdown();
 		m_light_manager->Shutdown();
 		m_device = nullptr;
@@ -171,6 +175,8 @@ namespace client_fw
 
 		for (const auto& [level_type, render_level] : m_graphics_render_levels)
 			render_level->UpdateFrameResource(device);
+
+		m_imgui_system->Update(device);
 
 #ifdef __USE_RENDER_UPDATE_CPU_TIME__
 		l_end = clock();
@@ -255,6 +261,8 @@ namespace client_fw
 	void RenderSystem::DrawUI(ID3D12GraphicsCommandList* command_list) const
 	{
 		m_graphics_render_levels.at(eRenderLevelType::kUI)->Draw(command_list);
+		m_imgui_system->PreDraw(command_list);
+		m_imgui_system->Draw(command_list);
 	}
 
 	void RenderSystem::UpdateViewport()

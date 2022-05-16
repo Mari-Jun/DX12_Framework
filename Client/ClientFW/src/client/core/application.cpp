@@ -16,13 +16,15 @@
 #include "client/asset/material/material_loader.h"
 #include "client/asset/texture/texture_loader.h"
 
+#include "client/imgui/imgui.h"
+
 //#define __USE_RENDER_CPU_TIME__
 #ifdef __USE_RENDER_CPU_TIME__
 #include <stdio.h>
 #include <time.h>
 #endif
 
-
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 namespace client_fw
 {
@@ -285,6 +287,12 @@ namespace client_fw
 
 	LRESULT CALLBACK Application::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
+		if (Input::GetInputMode() == eInputMode::kUIAndGame || Input::GetInputMode() == eInputMode::kUIOnly)
+		{
+			if (ImGui_ImplWin32_WndProcHandler(hWnd, message, wParam, lParam))
+				return true;
+		}
+
 		LRESULT result = NULL;
 
 		const auto& app = Application::GetApplication();
