@@ -1,6 +1,6 @@
 workspace "DX12Framework"
 	architecture "x64"
-	startproject "RenderTest"
+	startproject "Simulation"
 
 	configurations
 	{
@@ -19,3 +19,4 @@ include "ClientFW"
 include "ClientTest"
 include "EventTest"
 include "RenderTest"
+include "Simulation"
