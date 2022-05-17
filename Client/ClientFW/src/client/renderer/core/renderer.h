@@ -16,6 +16,7 @@ namespace client_fw
 
 		bool Initialize();
 		void Shutdown();
+		bool Update();
 		bool Render();
 
 		bool UpdateViewport();

@@ -23,11 +23,13 @@ namespace client_fw
 	class UserInterfaceManager;
 	class PhysicsWorld;
 
+	class LayerManager;
+	class Layer;
+
 	class AssetManager;
 	class MeshLoader;
 	class MaterialLoader;
 	class TextureLoader;
-	class AnimationLoader;
 
 	class Application
 	{
@@ -60,9 +62,11 @@ namespace client_fw
 		void RegisterPressedEvent(const std::string& name, std::vector<EventKeyInfo>&& keys,
 			const std::function<bool()>& func, bool consumption = true);
 
-		void OpenLevel(const SPtr<Level>& level);
-		void OpenLevel(const SPtr<Level>& level, UPtr<LevelLoader>&& level_loader);
-		void CloseLevel();
+		void OpenLevel(const SPtr<Level>& level) const;
+		void OpenLevel(const SPtr<Level>& level, UPtr<LevelLoader>&& level_loader) const;
+		void CloseLevel() const;
+
+		void RegisterLayer(const SPtr<Layer>& layer) const;
 
 	private:
 		virtual SPtr<LevelSharedInfo> CreateLevelSharedInfo() const;
@@ -79,7 +83,10 @@ namespace client_fw
 		UPtr<EventSystem> m_event_system;
 		UPtr<LevelManager> m_level_manager;
 		UPtr<UserInterfaceManager> m_user_interface_manager;
+		UPtr<LayerManager> m_layer_manager;
+
 		UPtr<PhysicsWorld> m_physics_world;
+
 		UPtr<Renderer> m_renderer;
 		UPtr<AssetManager> m_asset_manager;
 

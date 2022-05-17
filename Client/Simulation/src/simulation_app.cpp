@@ -1,6 +1,8 @@
 #include <include/client_fw.h>
 #include <client/core/entry_point.h>
 
+#include "object/layer/imgui_demo_layer.h"
+
 using namespace client_fw;
 
 namespace event_test
@@ -22,6 +24,8 @@ namespace event_test
 				[]()->bool { Input::SetInputMode(eInputMode::kUIAndGame); return true;  });
 			RegisterPressedEvent("Input Mode UI Only", std::vector{ EventKeyInfo{eKey::k3, {eAdditionalKey::kControl}} },
 				[]()->bool { Input::SetInputMode(eInputMode::kUIOnly); return true;  });
+
+			RegisterLayer(CreateSPtr<ImGuiDemoLayer>());
 
 			return result;
 		}

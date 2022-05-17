@@ -119,7 +119,8 @@ namespace client_fw
 		return m_frame_resource_manager->Initialize(m_device.Get());
 	}
 
-	bool Renderer::Render()
+
+	bool Renderer::Update()
 	{
 		if (m_is_level_changed)
 		{
@@ -137,7 +138,6 @@ namespace client_fw
 				WaitForSingleObject(event_handle, INFINITE);
 				CloseHandle(event_handle);
 			}
-			m_is_level_changed = false;
 		}
 		else
 		{
@@ -160,6 +160,20 @@ namespace client_fw
 
 			m_text_render_system->Update(m_device.Get());
 			m_render_system->Update(m_device.Get());
+		}
+
+		return true;
+	}
+
+	bool Renderer::Render()
+	{
+		if (m_is_level_changed)
+		{
+			m_is_level_changed = false;
+		}
+		else
+		{
+			const auto& frame_resource = m_frame_resource_manager->GetCurrentFrameResource();
 
 			const auto& allocator = frame_resource->GetCommandAllocator();
 

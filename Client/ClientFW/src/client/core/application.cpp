@@ -4,12 +4,16 @@
 #include "client/core/timer.h"
 #include "client/input/input.h"
 #include "client/event/core/event_system.h"
+
 #include "client/object/level/core/level_manager.h"
 #include "client/object/level/core/level_loader.h"
 #include "client/object/level/core/level.h"
 #include "client/object/level/sharedinfo/level_shared_info.h"
 #include "client/object/ui/core/user_interface_manager.h"
+#include "client/object/layer/core/layer_manager.h"
+
 #include "client/physics/core/physics_world.h"
+
 #include "client/renderer/core/renderer.h"
 #include "client/asset/core/asset_manager.h"
 #include "client/asset/mesh/mesh_loader.h"
@@ -42,7 +46,10 @@ namespace client_fw
 		m_event_system = CreateUPtr<EventSystem>(m_window);
 		m_level_manager = CreateUPtr<LevelManager>();
 		m_user_interface_manager = CreateUPtr<UserInterfaceManager>();
+		m_layer_manager = CreateUPtr<LayerManager>();
+
 		m_physics_world = CreateUPtr<PhysicsWorld>();
+
 		m_renderer = CreateUPtr<Renderer>(m_window);
 		m_asset_manager = CreateUPtr<AssetManager>();
 	}
@@ -99,6 +106,7 @@ namespace client_fw
 	void Application::Shutdown()
 	{
 		m_level_manager->Shutdown();
+		m_layer_manager->Shutdown();
 		m_user_interface_manager->Shutdown();
 		m_physics_world->Shutdown();
 		m_renderer->Shutdown();
@@ -154,6 +162,15 @@ namespace client_fw
 		m_physics_world->Update(delta_time);
 		m_user_interface_manager->Update(delta_time);
 		m_level_manager->UpdateWorldMatrix();
+		if (m_renderer->Update() == false)
+		{
+			LOG_ERROR("Render Update Error");
+			SetAppState(eAppState::kDead);
+		}
+		else
+		{
+			m_layer_manager->Update(delta_time);
+		}
 	}
 
 	void Application::Render()
@@ -191,19 +208,24 @@ namespace client_fw
 		Input::RegisterPressedEvent(name, std::move(keys), func, consumption, eInputOwnerType::kApplication);
 	}
 
-	void Application::OpenLevel(const SPtr<Level>& level)
+	void Application::OpenLevel(const SPtr<Level>& level) const
 	{
 		m_level_manager->OpenLevel(level, nullptr);
 	}
 
-	void Application::OpenLevel(const SPtr<Level>& level, UPtr<LevelLoader>&& level_loader)
+	void Application::OpenLevel(const SPtr<Level>& level, UPtr<LevelLoader>&& level_loader) const
 	{
 		m_level_manager->OpenLevel(level, std::move(level_loader));
 	}
 
-	void Application::CloseLevel()
+	void Application::CloseLevel() const
 	{
 		m_level_manager->CloseLevel();
+	}
+
+	void Application::RegisterLayer(const SPtr<Layer>& layer) const
+	{
+		m_layer_manager->RegisterLayer(layer);
 	}
 
 	SPtr<LevelSharedInfo> Application::CreateLevelSharedInfo() const
