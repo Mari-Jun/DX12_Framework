@@ -41,7 +41,7 @@ namespace client_fw
 	{
 		s_instance = this;
 
-		m_window = CreateSPtr<Window>(1366, 768);
+		m_window = CreateSPtr<Window>(1600, 900);
 		m_timer = CreateUPtr<Timer>();
 		m_event_system = CreateUPtr<EventSystem>(m_window);
 		m_level_manager = CreateUPtr<LevelManager>();
@@ -258,7 +258,7 @@ namespace client_fw
 		int posX = (GetSystemMetrics(SM_CXSCREEN) == m_window->width) ? 0 : (GetSystemMetrics(SM_CXSCREEN) - m_window->width) / 2;
 		int posY = (GetSystemMetrics(SM_CYSCREEN) == m_window->height) ? 0 : (GetSystemMetrics(SM_CYSCREEN) - m_window->height) / 2;
 
-		DWORD dw_style = WS_OVERLAPPED | WS_MINIMIZEBOX | /*WS_SYSMENU |*/ WS_THICKFRAME ;
+		DWORD dw_style = WS_OVERLAPPEDWINDOW;
 
 		m_window->hWnd = CreateWindowEx(WS_EX_APPWINDOW, m_app_name.c_str(), m_app_name.c_str(),
 			dw_style, posX, posY, m_window->width, m_window->height, NULL, NULL, m_window->hInstance, NULL);
