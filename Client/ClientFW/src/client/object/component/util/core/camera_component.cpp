@@ -25,15 +25,15 @@ namespace client_fw
 
 	void CameraComponent::Update(float delta_time)
 	{
-		if (m_is_updated_viewport)
+		if (m_is_updated_view_size)
 		{
-			SetAspectRatio(static_cast<float>(m_viewport.width) / static_cast<float>(m_viewport.height));
+			SetAspectRatio(static_cast<float>(m_view_size.x) / static_cast<float>(m_view_size.y));
 			UpdateProjectionMatrix();
 
 			m_view_projection_matrix = m_view_matrix * m_projection_matrix;
 
 			m_require_resize_texture = true;
-			m_is_updated_viewport = false;
+			m_is_updated_view_size = false;
 		}
 	}
 
@@ -46,15 +46,6 @@ namespace client_fw
 		m_view_projection_matrix = m_view_matrix * m_projection_matrix;
 
 		m_bounding_frustum.Transform(m_bf_projection, m_inverse_view_matrix);
-	}
-
-	void CameraComponent::UpdateViewport(LONG left, LONG top, LONG width, LONG height)
-	{
-		m_viewport.left = left;
-		m_viewport.width = width;
-		m_viewport.top = top;
-		m_viewport.height = height;
-		m_is_updated_viewport = true;
 	}
 
 	void CameraComponent::UpdateViewMatrix()
@@ -107,34 +98,32 @@ namespace client_fw
 
 	Mat4 CameraComponent::GetOrthoMatrix() const
 	{
-		return  mat4::Ortho(static_cast<float>(m_viewport.left),
-			static_cast<float>(m_viewport.left + m_viewport.width),
-			static_cast<float>(m_viewport.top + m_viewport.height),
-			static_cast<float>(m_viewport.top), m_near_z, m_far_z);
+		return  mat4::Ortho(0.f, static_cast<float>(m_view_size.x),
+			static_cast<float>(m_view_size.y), 0.f, m_near_z, m_far_z);
 	}
 
 	void CameraComponent::SetAspectRatio(float aspect_ratio)
 	{
 		m_aspect_ratio = aspect_ratio;
-		m_is_updated_viewport = true;
+		m_is_updated_view_size = true;
 	}
 
 	void CameraComponent::SetFieldOfView(float fov)
 	{
 		m_field_of_view = fov;
-		m_is_updated_viewport = true;
+		m_is_updated_view_size = true;
 	}
 
 	void CameraComponent::SetNearZ(float near_z)
 	{
 		m_near_z = near_z;
-		m_is_updated_viewport = true;
+		m_is_updated_view_size = true;
 	}
 
 	void CameraComponent::SetFarZ(float far_z)
 	{
 		m_far_z = far_z;
-		m_is_updated_viewport = true;
+		m_is_updated_view_size = true;
 	}
 
 	void CameraComponent::UpdateDestructibleRenderComponentVisibility(const std::function<bool(const SPtr<RenderComponent>)>& trigger_function)

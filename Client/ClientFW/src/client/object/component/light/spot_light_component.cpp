@@ -96,7 +96,7 @@ namespace client_fw
 	void SpotLightComponent::UpdateShadowTextureSize()
 	{
 		INT extent = std::clamp(m_shadow_texture_size, 0, s_spot_light_max_texture_size);
-		m_shadow_camera->SetViewport(Viewport{ 0, 0, extent, extent });
+		m_shadow_camera->SetViewSize(IVec2(extent, extent));
 	}
 
 	void SpotLightComponent::UpdateShadowCameraProjection()

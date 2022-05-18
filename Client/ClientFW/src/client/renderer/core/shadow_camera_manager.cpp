@@ -61,7 +61,7 @@ namespace client_fw
 		{
 			for (const auto& camera : m_ready_shadow_cameras)
 			{
-				IVec2 size = IVec2(camera->GetViewport().width, camera->GetViewport().height);
+				IVec2 size = camera->GetViewSize();
 
 				camera->SetShadowTexture(CreateSPtr<Shadow2DTexture>(size));
 				RenderResourceManager::GetRenderResourceManager().RegisterTexture(camera->GetShadowTexture());
@@ -94,7 +94,7 @@ namespace client_fw
 		{
 			for (const auto& camera : m_ready_shadow_cube_cameras)
 			{
-				IVec2 size = IVec2(camera->GetViewport().width, camera->GetViewport().height);
+				IVec2 size = camera->GetViewSize();
 
 				camera->SetShadowCubeTexture(CreateSPtr<ShadowCubeTexture>(size));
 				RenderResourceManager::GetRenderResourceManager().RegisterTexture(camera->GetShadowCubeTexture());
@@ -123,7 +123,7 @@ namespace client_fw
 		{
 			for (const auto& camera : m_ready_shadow_cascade_cameras)
 			{
-				IVec2 size = IVec2(camera->GetViewport().width, camera->GetViewport().height);
+				IVec2 size = camera->GetViewSize();
 
 				camera->SetShadowArrayTexture(CreateSPtr<ShadowArrayTexture>(size, s_max_cascade_level));
 				RenderResourceManager::GetRenderResourceManager().RegisterTexture(camera->GetShadowArrayTexture());

@@ -98,7 +98,7 @@ namespace client_fw
 		{
 			for (const auto& camera : m_ready_render_cameras)
 			{
-				IVec2 size = IVec2(camera->GetViewport().width, camera->GetViewport().height);
+				IVec2 size = camera->GetViewSize();
 
 				if(camera->GetRenderTexture() == nullptr)
 					camera->SetRenderTexture(CreateSPtr<RenderTexture>(size));
@@ -210,15 +210,14 @@ namespace client_fw
 
 	void RenderCameraManager::UpdateMainCameraViewport(LONG width, LONG height)
 	{
-		//Resize (Texture 재생성)가 지원하지 않는 이상 무의미한 코드
 		if (m_ready_main_camera != nullptr)
 		{
-			m_ready_main_camera->UpdateViewport(0, 0, width, height);
+			m_ready_main_camera->SetViewSize(IVec2(width, height));
 			m_ready_main_camera->SetNearZ(20.0f);
 		}
 		else if (m_main_camera != nullptr)
 		{
-			m_main_camera->UpdateViewport(0, 0, width, height);
+			m_main_camera->SetViewSize(IVec2(width, height));
 			m_main_camera->SetNearZ(20.0f);
 		}
 	}
