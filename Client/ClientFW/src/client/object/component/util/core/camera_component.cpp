@@ -32,6 +32,7 @@ namespace client_fw
 
 			m_view_projection_matrix = m_view_matrix * m_projection_matrix;
 
+			m_require_resize_texture = true;
 			m_is_updated_viewport = false;
 		}
 	}

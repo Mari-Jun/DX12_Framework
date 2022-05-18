@@ -33,21 +33,44 @@ namespace client_fw
 	void RenderCameraManager::Update(ID3D12Device* device,
 		std::function<void(ID3D12Device*)>&& update_shader_function_for_render_camera)
 	{
+		ResizeRenderCamerasTexture(device);
+
 		UpdateRenderCameras(device);
 
 		UpdateCameraResource(device,
 			std::move(update_shader_function_for_render_camera));
 	}
 
-	void RenderCameraManager::UpdateRenderCameras(ID3D12Device* device)
+	void RenderCameraManager::ResizeRenderCamerasTexture(ID3D12Device* device)
 	{
-		if (m_ready_main_camera != nullptr && m_ready_main_camera->GetRenderTexture() != nullptr &&
-			m_main_camera != m_ready_main_camera)
+		int resize_count = 0;
+
+		for (auto i_camera = m_render_cameras.begin(); i_camera != m_render_cameras.end() - resize_count;)
 		{
-			m_main_camera = m_ready_main_camera;
-			m_ready_main_camera = nullptr;
+			const auto& camera = *i_camera;
+			if (camera->RequireResizeTexture())
+			{
+				if (camera == m_main_camera)
+				{
+					m_ready_main_camera = m_main_camera;
+					m_main_camera = nullptr;
+				}
+				m_ready_render_cameras.push_back(camera);
+				std::iter_swap(i_camera, m_render_cameras.rbegin() + resize_count);
+				++resize_count;
+			}
+			else
+			{
+				++i_camera;
+			}
 		}
 
+		while (resize_count--)
+			m_render_cameras.pop_back();
+	}
+
+	void RenderCameraManager::UpdateRenderCameras(ID3D12Device* device)
+	{
 		UpdateRenderCamerasForCascadeShadow(device);
 
 		// 여기서 wait와 ready camera가 있는데 이와 같이 있는 이유는 
@@ -60,7 +83,14 @@ namespace client_fw
 		if (m_wait_resource_render_cameras.empty() == false)
 		{
 			for (const auto& camera : m_wait_resource_render_cameras)
+			{
+				if (camera == m_ready_main_camera)
+				{
+					m_main_camera = m_ready_main_camera;
+					m_ready_main_camera = nullptr;
+				}
 				m_render_cameras.push_back(camera);
+			}
 			m_wait_resource_render_cameras.clear();
 		}
 
@@ -70,8 +100,12 @@ namespace client_fw
 			{
 				IVec2 size = IVec2(camera->GetViewport().width, camera->GetViewport().height);
 
-				camera->SetRenderTexture(CreateSPtr<RenderTexture>(size));
+				if(camera->GetRenderTexture() == nullptr)
+					camera->SetRenderTexture(CreateSPtr<RenderTexture>(size));
+				else
+					camera->GetRenderTexture()->SetTextureSize(size);
 				RenderResourceManager::GetRenderResourceManager().RegisterTexture(camera->GetRenderTexture());
+				camera->SetRequireResizeTexture(false);
 
 				m_wait_resource_render_cameras.push_back(camera);
 			}
@@ -197,7 +231,7 @@ namespace client_fw
 		const auto& camera_resource = FrameResourceManager::GetManager().GetCurrentFrameResource()->GetCameraFrameResource();
 
 		UINT index = 0;
-	
+
 		for (const auto& camera : m_render_cameras)
 		{
 			D3D12_GPU_VIRTUAL_ADDRESS gpu_address;

@@ -57,6 +57,7 @@ namespace client_fw
 		eProjectionMode m_projection_mode;
 		Viewport m_viewport;
 		bool m_is_updated_viewport = true;
+		bool m_require_resize_texture = false;
 		Vec3 m_camera_position;
 		Vec3 m_camera_forward;
 		Mat4 m_view_matrix;
@@ -79,6 +80,8 @@ namespace client_fw
 		eCameraUsage GetCameraUsage() const { return m_camera_usage; }
 		const Viewport& GetViewport() const { return m_viewport; }
 		void SetViewport(const Viewport& viewport) { m_viewport = viewport; m_is_updated_viewport = true; }
+		bool RequireResizeTexture() const { return m_require_resize_texture; }
+		void SetRequireResizeTexture(bool value) { m_require_resize_texture = value; }
 		const Vec3& GetCameraPosition() const { return m_camera_position; }
 		const Vec3& GetCameraForward() const { return m_camera_forward; }
 		const Mat4& GetViewMatrix() const { return m_view_matrix; }

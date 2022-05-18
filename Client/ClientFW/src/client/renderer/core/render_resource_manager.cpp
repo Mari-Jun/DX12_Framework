@@ -267,27 +267,59 @@ namespace client_fw
 
 		for (const auto& texture : m_ready_render_textures)
 		{
+			LOG_INFO("Create render texture [{0}]", texture->GetTextureSize());
+
 			//GBuffer의 Format이 달라지게 된다면 변경이 필요하다.
 			texture->Initialize(device, command_list,
 				{ DXGI_FORMAT_R8G8B8A8_UNORM,  DXGI_FORMAT_R11G11B10_FLOAT, DXGI_FORMAT_R8G8B8A8_UNORM });
 
 			for (UINT i = 0; i < texture->GetNumOfGBufferTexture(); ++i)
 			{
+				if (texture->GetGBufferResourceIndex(i) >= 0)
+				{
+					cpu_handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(m_texture_desciptor_heap->GetCPUDescriptorHandleForHeapStart());
+					cpu_handle.Offset(texture->GetGBufferResourceIndex(i), D3DUtil::s_cbvsrvuav_descirptor_increment_size);
+				}
+
 				device->CreateShaderResourceView(texture->GetGBufferTexture(i),
 					&TextureCreator::GetShaderResourceViewDesc(texture->GetGBufferTexture(i)), cpu_handle);
-				texture->SetGBufferResourceIndex(i, m_num_of_render_texture_data++);
-				cpu_handle.Offset(1, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
+
+				if (texture->GetGBufferResourceIndex(i) < 0)
+				{
+					texture->SetGBufferResourceIndex(i, m_num_of_render_texture_data++);
+					cpu_handle.Offset(1, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
+				}
+			}
+
+			if (texture->GetResourceIndex() >= 0)
+			{
+				cpu_handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(m_texture_desciptor_heap->GetCPUDescriptorHandleForHeapStart());
+				cpu_handle.Offset(texture->GetResourceIndex(), D3DUtil::s_cbvsrvuav_descirptor_increment_size);
 			}
 
 			device->CreateShaderResourceView(texture->GetResource(),
 				&TextureCreator::GetShaderResourceViewDesc(texture->GetResource()), cpu_handle);
-			texture->SetResourceIndex(m_num_of_render_texture_data++);
-			cpu_handle.Offset(1, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
+
+			if (texture->GetResourceIndex() < 0)
+			{
+				texture->SetResourceIndex(m_num_of_render_texture_data++);
+				cpu_handle.Offset(1, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
+			}
+
+			if (texture->GetDSVResourceIndex() >= 0)
+			{
+				cpu_handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(m_texture_desciptor_heap->GetCPUDescriptorHandleForHeapStart());
+				cpu_handle.Offset(texture->GetDSVResourceIndex(), D3DUtil::s_cbvsrvuav_descirptor_increment_size);
+			}
 
 			device->CreateShaderResourceView(texture->GetDSVTexture(),
 				&TextureCreator::GetShaderResourceViewDescForDSV(texture->GetDSVTexture()), cpu_handle);
-			texture->SetDSVResourceIndex(m_num_of_render_texture_data++);
-			cpu_handle.Offset(1, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
+
+			if (texture->GetDSVResourceIndex() < 0)
+			{
+				texture->SetDSVResourceIndex(m_num_of_render_texture_data++);
+				cpu_handle.Offset(1, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
+			}
 		}
 
 		m_ready_render_textures.clear();

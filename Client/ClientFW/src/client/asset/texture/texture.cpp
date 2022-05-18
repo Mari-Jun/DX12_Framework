@@ -66,6 +66,9 @@ namespace client_fw
 	bool RenderTexture::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list,
 		const std::vector<DXGI_FORMAT>& gbuffer_rtv_formats)
 	{
+		m_gbuffer_textures.clear();
+		m_gbuffer_rtv_cpu_handles.clear();
+
 		m_num_of_gbuffer_texture = static_cast<UINT>(gbuffer_rtv_formats.size());
 
 		if (CreateDescriptorHeaps(device, command_list) == false)
@@ -137,7 +140,8 @@ namespace client_fw
 			rtv_desc.Format = gbuffer_rtv_formats[i];
 			device->CreateRenderTargetView(m_gbuffer_textures[i].Get(), &rtv_desc, rtv_heap_handle);
 			m_gbuffer_rtv_cpu_handles.push_back(rtv_heap_handle);
-			m_gbuffer_texture_resource_indices.push_back(0);
+			if(m_gbuffer_texture_resource_indices.size() <= i)
+				m_gbuffer_texture_resource_indices.push_back(-1);
 			rtv_heap_handle.Offset(1, D3DUtil::s_rtv_descirptor_increment_size);
 		}
 		rtv_desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -227,7 +231,7 @@ namespace client_fw
 		}
 	}
 
-	UINT RenderTexture::GetGBufferResourceIndex(UINT buffer_index) const
+	INT RenderTexture::GetGBufferResourceIndex(UINT buffer_index) const
 	{
 		if (buffer_index < m_num_of_gbuffer_texture)
 			return m_gbuffer_texture_resource_indices[buffer_index];

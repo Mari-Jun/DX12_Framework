@@ -37,6 +37,7 @@ namespace client_fw
 		void UnregisterCameraComponent(const SPtr<CameraComponent>& camera_comp);
 
 	private:
+		void ResizeRenderCamerasTexture(ID3D12Device* device);
 		void UpdateRenderCameras(ID3D12Device* device);
 		void UpdateRenderCamerasForCascadeShadow(ID3D12Device* device);
 		void UpdateCameraResource(ID3D12Device* device, 

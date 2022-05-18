@@ -85,22 +85,23 @@ namespace client_fw
 		std::vector<ComPtr<ID3D12Resource>> m_gbuffer_textures;
 		ComPtr<ID3D12DescriptorHeap> m_rtv_descriptor_heap;
 		std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> m_gbuffer_rtv_cpu_handles;
-		std::vector<UINT> m_gbuffer_texture_resource_indices;
+		std::vector<INT> m_gbuffer_texture_resource_indices;
 		D3D12_CPU_DESCRIPTOR_HANDLE m_rtv_cpu_handle;
 
 		ComPtr<ID3D12Resource> m_dsv_texture;
 		ComPtr<ID3D12DescriptorHeap> m_dsv_descriptor_heap;
 		D3D12_CPU_DESCRIPTOR_HANDLE m_dsv_cpu_handle;
-		UINT m_dsv_texture_resource_index;
+		INT m_dsv_texture_resource_index = -1;
 		
 	public:
 		const IVec2& GetTextureSize() const { return m_texture_size; }
+		void SetTextureSize(const IVec2& size) { m_texture_size = size; }
 		UINT GetNumOfGBufferTexture() const { return m_num_of_gbuffer_texture; }
 		ID3D12Resource* GetGBufferTexture(UINT buffer_index) const;
-		UINT GetGBufferResourceIndex(UINT buffer_index) const;
+		INT GetGBufferResourceIndex(UINT buffer_index) const;
 		void SetGBufferResourceIndex(UINT buffer_index, UINT resource_index);
 		ID3D12Resource* GetDSVTexture() const { return m_dsv_texture.Get(); }
-		UINT GetDSVResourceIndex() const { return m_dsv_texture_resource_index; }
+		INT GetDSVResourceIndex() const { return m_dsv_texture_resource_index; }
 		void SetDSVResourceIndex(UINT index) { m_dsv_texture_resource_index = index; }
 	};
 
