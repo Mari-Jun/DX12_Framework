@@ -4,7 +4,9 @@
 #include "object/level/rotating_cube_level.h"
 
 #include "object/layer/imgui_demo_layer.h"
+#include "object/layer/docking_layer.h"
 #include "object/layer/viewport_layer.h"
+#include "object/layer/select_level_layer.h"
 
 using namespace client_fw;
 
@@ -15,6 +17,7 @@ namespace simulation
 	public:
 		SimulationApp() : Application(L"Simulation App")
 		{
+			m_select_level_layer = CreateSPtr<SelectLevelLayer>();
 		}
 
 		bool Initialize() override
@@ -28,11 +31,12 @@ namespace simulation
 			RegisterPressedEvent("Input Mode UI Only", std::vector{ EventKeyInfo{eKey::k3, {eAdditionalKey::kControl}} },
 				[]()->bool { Input::SetInputMode(eInputMode::kUIOnly); return true;  });
 
-			RegisterPressedEvent("open rotating cube level", { {eKey::k1} },
-				[this]()->bool {OpenLevel(CreateSPtr<RotatingCubeLevel>()); return true; });
-
 			//RegisterLayer(CreateSPtr<ImGuiDemoLayer>());
+			RegisterLayer(CreateSPtr<DockingLayer>());
 			RegisterLayer(CreateSPtr<ViewportLayer>());
+			RegisterLayer(m_select_level_layer);
+
+			m_select_level_layer->RegisterLevel<RotatingCubeLevel>({ "open rotating cube level" });
 
 			return result;
 		}
@@ -41,6 +45,9 @@ namespace simulation
 		{
 			Application::Shutdown();
 		}
+
+	private:
+		SPtr<SelectLevelLayer> m_select_level_layer;
 	};
 }
 

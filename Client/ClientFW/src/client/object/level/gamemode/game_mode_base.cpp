@@ -22,13 +22,11 @@ namespace client_fw
 		m_player_controller->Possess(m_default_pawn);
 		level->SpawnActor(m_default_pawn);
 		level->SpawnActor(m_player_controller);
-		Input::SetInputMode(eInputMode::kGameOnly);
 		return true;
 	}
 
 	void GameMode::Shutdown()
 	{
-		Input::SetInputMode(eInputMode::kUIOnly);
 		m_default_pawn = nullptr;
 		m_player_controller = nullptr;
 	}
