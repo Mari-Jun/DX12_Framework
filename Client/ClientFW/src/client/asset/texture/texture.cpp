@@ -250,6 +250,77 @@ namespace client_fw
 			LOG_WARN("Out of range of texture GBuffer Index");
 	}
 
+	ViewportTexture::ViewportTexture(const IVec2& size)
+		: Texture(eTextureType::kViewport)
+		, m_texture_size(size)
+	{
+	}
+
+	bool ViewportTexture::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
+	{
+		if (CreateDescriptorHeaps(device, command_list) == false)
+		{
+			LOG_ERROR("Could not create descriptor heaps : [viewport texture]");
+			return false;
+		}
+
+		CreateRTVTexture(device, command_list);
+
+		return true;
+	}
+
+	bool ViewportTexture::CreateDescriptorHeaps(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
+	{
+		D3D12_DESCRIPTOR_HEAP_DESC rtv_heap_desc;
+		rtv_heap_desc.NumDescriptors = 1;
+		rtv_heap_desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+		rtv_heap_desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+		rtv_heap_desc.NodeMask = 0;
+		if (FAILED(device->CreateDescriptorHeap(&rtv_heap_desc, IID_PPV_ARGS(&m_rtv_descriptor_heap))))
+		{
+			LOG_ERROR("Could not create RTV descriptor heap");
+			return false;
+		}
+
+		return true;
+	}
+
+	void ViewportTexture::CreateRTVTexture(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
+	{
+		D3D12_CLEAR_VALUE rtv_clear_value{ DXGI_FORMAT_R8G8B8A8_UNORM, {0.0f, 0.0f, 0.0f, 1.0f} };
+
+		//최종 rendering texture를 생성한다.
+		rtv_clear_value.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		m_texture_resource = TextureCreator::Create2DTexture(device, DXGI_FORMAT_R8G8B8A8_UNORM, m_texture_size, 1, 1,
+			D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET, D3D12_RESOURCE_STATE_GENERIC_READ, &rtv_clear_value);
+		D3DUtil::SetObjectName(m_texture_resource.Get(), "Viewport rtv texture");
+
+		D3D12_RENDER_TARGET_VIEW_DESC rtv_desc;
+		rtv_desc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+		rtv_desc.Texture2D.MipSlice = 0;
+		rtv_desc.Texture2D.PlaneSlice = 0;
+
+		CD3DX12_CPU_DESCRIPTOR_HANDLE rtv_heap_handle(m_rtv_descriptor_heap->GetCPUDescriptorHandleForHeapStart());
+		rtv_desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		device->CreateRenderTargetView(m_texture_resource.Get(), &rtv_desc, rtv_heap_handle);
+		m_rtv_cpu_handle = rtv_heap_handle;
+	}
+
+	void ViewportTexture::PreDraw(ID3D12GraphicsCommandList* command_list)
+	{
+		command_list->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
+			m_texture_resource.Get(), D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_STATE_RENDER_TARGET));
+
+		FLOAT clear_value[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+		command_list->ClearRenderTargetView(m_rtv_cpu_handle, clear_value, 0, nullptr);
+		command_list->OMSetRenderTargets(1, &m_rtv_cpu_handle, true, nullptr);
+	}
+
+	void ViewportTexture::PostDraw(ID3D12GraphicsCommandList* command_list)
+	{
+		command_list->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
+			m_texture_resource.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_GENERIC_READ));
+	}
 
 	ShadowTexture::ShadowTexture(eTextureType type, const IVec2& size)
 		: Texture(type)

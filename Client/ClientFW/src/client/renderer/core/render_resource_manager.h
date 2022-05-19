@@ -8,12 +8,15 @@ namespace client_fw
 #define START_INDEX_RENDER_CUBE_MAP_TEXTURE		20000		//Render Cube Map Texture를 2000개까지 지원
 #define START_INDEX_EXTERNAL_CUBE_MAP_TEXTURE	22000		//External_Cube Map Texture를 500개까지 지원
 #define START_INDEX_RENDER_ARRAY_TEXTURE		22500		//Render Cube Map Texture를 500개까지 지원
+
 #define START_INDEX_IMGUI						23000
+#define START_INDEX_VIEWPORT_TEXTURE			23003
 
 #define MAX_2D_TEXTURE_RESOURCE_SIZE		20000
 #define MAX_CUBE_TEXTURE_RESOURCE_SIZE		2500
 #define MAX_ARRAY_TEXTURE_RESOURCE_SIZE		500
 #define IMGUI_NUM_FRAMES_IN_FLIGHT			3
+#define MAX_VIEWPORT_TEXTURE_RESOURCE_SIZE	1
 
 	class Primitive;
 	class Mesh;
@@ -22,6 +25,7 @@ namespace client_fw
 	class ExternalTexture;
 	class ExternalCubeMapTexture;
 	class RenderTexture;
+	class ViewportTexture;
 	class Shadow2DTexture;
 	class ShadowArrayTexture;
 	class ShadowCubeTexture;
@@ -54,6 +58,7 @@ namespace client_fw
 		void UpdateExternalTextureResource(ID3D12Device* device, ID3D12GraphicsCommandList* command_list);
 		void UpdateExternalCubeMapTextureResource(ID3D12Device* device, ID3D12GraphicsCommandList* command_list);
 		void UpdateRenderTextureResource(ID3D12Device* device, ID3D12GraphicsCommandList* command_list);
+		void UpdateViewportTextureResource(ID3D12Device* device, ID3D12GraphicsCommandList* command_list);
 		void UpdateShadowTextureResource(ID3D12Device* device, ID3D12GraphicsCommandList* command_list);
 		void UpdateShadowCubeTextureResource(ID3D12Device* device, ID3D12GraphicsCommandList* command_list);
 		void UpdateShadowArrayTextureResource(ID3D12Device* device, ID3D12GraphicsCommandList* command_list);
@@ -67,6 +72,7 @@ namespace client_fw
 		std::vector<SPtr<Primitive>> m_ready_primitives;
 		std::vector<SPtr<ExternalTexture>> m_ready_external_textures;
 		std::vector<SPtr<RenderTexture>> m_ready_render_textures;
+		SPtr<ViewportTexture> m_ready_viewport_textures;
 		std::vector<SPtr<Shadow2DTexture>> m_ready_shadow_textures;
 		std::vector<SPtr<ShadowCubeTexture>> m_ready_shadow_cube_textures;
 		std::vector<SPtr<ShadowArrayTexture>> m_ready_shadow_array_textures;

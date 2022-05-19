@@ -7,7 +7,7 @@ namespace client_fw
 	{
 		kExternal, kExternalCubeMap, 
 		kRedner, kShadow, kShadowCubeMap, kShadowArray,
-		kRenderUI
+		kRenderUI, kViewport
 	};
 
 	class Texture
@@ -24,12 +24,15 @@ namespace client_fw
 		INT m_texture_resource_index = -1;
 
 		ComPtr<ID3D12Resource> m_texture_resource;
-		
+		D3D12_GPU_VIRTUAL_ADDRESS m_gpu_address;
+
 	public:
 		eTextureType GetTextureType() const { return m_texture_type; }
 		INT GetResourceIndex() const { return m_texture_resource_index; }
 		void SetResourceIndex(INT index) { m_texture_resource_index = index; }
 		ID3D12Resource* GetResource() const { return m_texture_resource.Get(); }
+		D3D12_GPU_VIRTUAL_ADDRESS GetGPUAddress() const { return m_gpu_address; }
+		void SetGPUAddress(D3D12_GPU_VIRTUAL_ADDRESS address) { m_gpu_address = address; }
 	};
 
 	class ExternalTexture final: public Asset, public Texture
@@ -103,6 +106,29 @@ namespace client_fw
 		ID3D12Resource* GetDSVTexture() const { return m_dsv_texture.Get(); }
 		INT GetDSVResourceIndex() const { return m_dsv_texture_resource_index; }
 		void SetDSVResourceIndex(UINT index) { m_dsv_texture_resource_index = index; }
+	};
+
+	class ViewportTexture : public Texture
+	{
+	public:
+		ViewportTexture(const IVec2& size);
+
+	public:
+		virtual bool Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list) override;
+		virtual void PreDraw(ID3D12GraphicsCommandList* command_list);
+		virtual void PostDraw(ID3D12GraphicsCommandList* command_list);
+
+	private:
+		virtual bool CreateDescriptorHeaps(ID3D12Device* device, ID3D12GraphicsCommandList* command_list);
+		void CreateRTVTexture(ID3D12Device* device, ID3D12GraphicsCommandList* command_list);
+
+	private:
+		IVec2 m_texture_size;
+		ComPtr<ID3D12DescriptorHeap> m_rtv_descriptor_heap;
+		D3D12_CPU_DESCRIPTOR_HANDLE m_rtv_cpu_handle;
+
+	public:
+		const IVec2& GetTextureSize() const { return m_texture_size; }
 	};
 
 	class ShadowTexture : public Texture

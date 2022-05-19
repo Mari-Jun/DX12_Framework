@@ -28,6 +28,7 @@ namespace client_fw
 
 	void EventSystem::ExecuteEvent()
 	{
+		m_input_manager->Update();
 		m_packet_event_manager->ExecuteEventReceivedFromServer();
 		eInputMode mode = Input::GetInputMode();
 		if (mode != eInputMode::kInActive)
@@ -36,7 +37,11 @@ namespace client_fw
 			m_input_event_manager->ExecuteEvent();
 		}
 		m_message_event_manager->ExecuteEvent();
-		m_input_manager->Update();
+	}
+
+	void EventSystem::Update()
+	{
+		m_input_manager->UpdateForNextFrame();
 	}
 
 	void EventSystem::SendEventToServer()

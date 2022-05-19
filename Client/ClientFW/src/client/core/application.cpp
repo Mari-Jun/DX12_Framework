@@ -171,6 +171,7 @@ namespace client_fw
 		{
 			m_layer_manager->Update(delta_time);
 		}
+		m_event_system->Update();
 	}
 
 	void Application::Render()

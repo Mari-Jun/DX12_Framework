@@ -29,7 +29,7 @@ namespace client_fw
 	{
 		D3D12_DESCRIPTOR_HEAP_DESC texture_heap_desc;
 		texture_heap_desc.NumDescriptors = MAX_2D_TEXTURE_RESOURCE_SIZE + MAX_CUBE_TEXTURE_RESOURCE_SIZE +
-			MAX_ARRAY_TEXTURE_RESOURCE_SIZE + IMGUI_NUM_FRAMES_IN_FLIGHT;
+			MAX_ARRAY_TEXTURE_RESOURCE_SIZE + IMGUI_NUM_FRAMES_IN_FLIGHT + MAX_VIEWPORT_TEXTURE_RESOURCE_SIZE;
 		texture_heap_desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 		texture_heap_desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 		texture_heap_desc.NodeMask = 0;
@@ -120,6 +120,11 @@ namespace client_fw
 				m_ready_render_textures.push_back(std::static_pointer_cast<RenderTexture>(texture));
 				break;
 			}
+			case eTextureType::kViewport:
+			{
+				m_ready_viewport_textures = std::static_pointer_cast<ViewportTexture>(texture);
+				break;
+			}
 			case eTextureType::kShadow:
 			{
 				m_ready_shadow_textures.push_back(std::static_pointer_cast<Shadow2DTexture>(texture));
@@ -208,6 +213,7 @@ namespace client_fw
 	{
 		UpdateExternalTextureResource(device, command_list);
 		UpdateRenderTextureResource(device, command_list);
+		UpdateViewportTextureResource(device, command_list);
 		UpdateShadowTextureResource(device, command_list);
 		UpdateShadowCubeTextureResource(device, command_list);
 		UpdateRenderTextTextureResource(device, command_list);
@@ -323,6 +329,30 @@ namespace client_fw
 		}
 
 		m_ready_render_textures.clear();
+	}
+
+	void RenderResourceManager::UpdateViewportTextureResource(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
+	{
+		CD3DX12_CPU_DESCRIPTOR_HANDLE cpu_handle(m_texture_desciptor_heap->GetCPUDescriptorHandleForHeapStart());
+		cpu_handle.Offset(START_INDEX_VIEWPORT_TEXTURE, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
+		CD3DX12_GPU_DESCRIPTOR_HANDLE gpu_handle(m_texture_desciptor_heap->GetGPUDescriptorHandleForHeapStart());
+		gpu_handle.Offset(START_INDEX_VIEWPORT_TEXTURE, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
+
+		if (m_ready_viewport_textures != nullptr)
+		{
+			const auto& texture = m_ready_viewport_textures;
+
+			LOG_INFO("Create viewport texture [{0}]", texture->GetTextureSize());
+
+			texture->Initialize(device, command_list);
+
+			device->CreateShaderResourceView(texture->GetResource(),
+				&TextureCreator::GetShaderResourceViewDesc(texture->GetResource()), cpu_handle);
+			texture->SetResourceIndex(START_INDEX_VIEWPORT_TEXTURE);
+			texture->SetGPUAddress(gpu_handle.ptr);
+
+			m_ready_viewport_textures = nullptr;
+		}
 	}
 
 	void RenderResourceManager::UpdateShadowTextureResource(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)

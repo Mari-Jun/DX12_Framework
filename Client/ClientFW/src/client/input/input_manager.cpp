@@ -16,14 +16,6 @@ namespace client_fw
 
     void InputManager::Update()
     {
-        m_key_states[ToUnderlying(EKeyState::kBefore)] =
-            m_key_states[ToUnderlying(EKeyState::kCur)];
-
-        m_key_states[ToUnderlying(EKeyState::kConsumption)].reset();
-
-        m_key_states[ToUnderlying(EKeyState::kCur)][ToUnderlying(eKey::kXMove)] =
-            m_key_states[ToUnderlying(EKeyState::kCur)][ToUnderlying(eKey::kYMove)] = false;
-
         const auto& window = m_window.lock();
 
         if (m_is_hide_cursor)
@@ -44,16 +36,29 @@ namespace client_fw
         }
         else
         {
-            m_mouse_position[ToUnderlying(EKeyState::kBefore)] =
-                m_mouse_position[ToUnderlying(EKeyState::kCur)];
-
             POINT pos;
             GetCursorPos(&pos);
             ScreenToClient(window->hWnd, &pos);
 
             m_mouse_position[ToUnderlying(EMousePosState::kCur)] = IVec2(pos.x, pos.y);
         }
+    }
 
+    void InputManager::UpdateForNextFrame()
+    {
+        m_key_states[ToUnderlying(EKeyState::kBefore)] =
+            m_key_states[ToUnderlying(EKeyState::kCur)];
+
+        m_key_states[ToUnderlying(EKeyState::kConsumption)].reset();
+
+        m_key_states[ToUnderlying(EKeyState::kCur)][ToUnderlying(eKey::kXMove)] =
+            m_key_states[ToUnderlying(EKeyState::kCur)][ToUnderlying(eKey::kYMove)] = false;
+
+        if (m_is_hide_cursor == false)
+        {
+            m_mouse_position[ToUnderlying(EKeyState::kBefore)] =
+                m_mouse_position[ToUnderlying(EKeyState::kCur)];
+        }
     }
 
     bool InputManager::IsKeyHoldDown(UINT key) const

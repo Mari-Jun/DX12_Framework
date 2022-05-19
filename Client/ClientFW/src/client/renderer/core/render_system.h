@@ -3,21 +3,27 @@
 namespace client_fw
 {
 	struct Window;
-	class GraphicsSuperRootSignature;
+
 	enum class eRenderLevelType;
+	enum class eKindOfRenderLevel;
+	class GraphicsSuperRootSignature;
 	class GraphicsRenderLevel;
 	class GraphicsShader;
+
 	class RenderComponent;
 	class SkyComponent;
 	class CameraComponent;
 	class RenderCameraComponent;
-	enum class eKindOfRenderLevel;
+
 	class RenderResourceManager;
 	class RenderCameraManager;
 	class ShadowCameraManager;
 	class LightComponent;
 	class LightManager;
+
 	class ImGuiSystem;
+
+	class IngameViewport;
 
 	class RenderSystem final
 	{
@@ -32,10 +38,11 @@ namespace client_fw
 		void Shutdown();
 
 		void Update(ID3D12Device* device);
+		void UpdateInGameViewport(ID3D12Device* device);
 		void PreDraw(ID3D12Device* device, ID3D12GraphicsCommandList* command_list) const;
 		void Draw(ID3D12GraphicsCommandList* command_list) const;
-		void DrawMainCameraView(ID3D12GraphicsCommandList* command_list) const;
-		void DrawUI(ID3D12GraphicsCommandList* command_list) const;
+		void DrawInGameViewport(ID3D12GraphicsCommandList* command_list) const;
+		void DrawFinalView(ID3D12GraphicsCommandList* command_list) const;
 
 		void UpdateViewport();
 
@@ -87,6 +94,7 @@ namespace client_fw
 	private:
 		WPtr<Window> m_window;
 		ID3D12Device* m_device;
+		bool m_wait_gpu_complete = false;
 
 		SPtr<GraphicsSuperRootSignature> m_graphics_super_root_signature;
 		std::map<eRenderLevelType, SPtr<GraphicsRenderLevel>> m_graphics_render_levels;
@@ -100,6 +108,16 @@ namespace client_fw
 		UPtr<LightManager> m_light_manager;
 
 		UPtr<ImGuiSystem> m_imgui_system;
+
+		UPtr<IngameViewport> m_ready_ingame_viewport;
+		UPtr<IngameViewport> m_ingame_viewport;
+
+	public:
+		bool IsWaitGpuComplete() const { return m_wait_gpu_complete; }
+		void SetWaitGpuComplete(bool value) { m_wait_gpu_complete = value; }
+		void EnableIngameViewport(const IVec2& position, const IVec2& size);
+		void DisableIngameViewport();
+		const UPtr<IngameViewport>& GetIngameViewport() const { return m_ingame_viewport; }
 
 	public:
 		ID3D12Device* GetDevice() const { return m_device; }

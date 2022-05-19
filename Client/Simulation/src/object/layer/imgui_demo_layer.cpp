@@ -4,7 +4,7 @@
 #include "object/layer/imgui_demo_layer.h"
 
 
-namespace client_fw
+namespace simulation
 {
 	ImGuiDemoLayer::ImGuiDemoLayer(const std::string& name)
 		: Layer(name)

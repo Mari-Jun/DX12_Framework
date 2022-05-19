@@ -1,11 +1,14 @@
 #include <include/client_fw.h>
 #include <client/core/entry_point.h>
 
+#include "object/level/rotating_cube_level.h"
+
 #include "object/layer/imgui_demo_layer.h"
+#include "object/layer/viewport_layer.h"
 
 using namespace client_fw;
 
-namespace event_test
+namespace simulation
 {
 	class SimulationApp : public client_fw::Application
 	{
@@ -25,7 +28,11 @@ namespace event_test
 			RegisterPressedEvent("Input Mode UI Only", std::vector{ EventKeyInfo{eKey::k3, {eAdditionalKey::kControl}} },
 				[]()->bool { Input::SetInputMode(eInputMode::kUIOnly); return true;  });
 
-			RegisterLayer(CreateSPtr<ImGuiDemoLayer>());
+			RegisterPressedEvent("open rotating cube level", { {eKey::k1} },
+				[this]()->bool {OpenLevel(CreateSPtr<RotatingCubeLevel>()); return true; });
+
+			//RegisterLayer(CreateSPtr<ImGuiDemoLayer>());
+			RegisterLayer(CreateSPtr<ViewportLayer>());
 
 			return result;
 		}
@@ -39,5 +46,5 @@ namespace event_test
 
 client_fw::UPtr<client_fw::Application> client_fw::CreateApplication()
 {
-	return client_fw::CreateUPtr<event_test::SimulationApp>();
+	return client_fw::CreateUPtr<simulation::SimulationApp>();
 }

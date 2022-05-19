@@ -27,6 +27,7 @@ namespace client_fw
 		InputManager& operator=(const InputManager&) = delete;
 		
 		void Update();
+		void UpdateForNextFrame();
 
 	public:
 		bool IsKeyHoldDown(UINT key) const;

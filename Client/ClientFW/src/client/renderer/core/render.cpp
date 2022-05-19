@@ -2,6 +2,7 @@
 #include "client/core/window.h"
 #include "client/renderer/core/render.h"
 #include "client/renderer/core/render_system.h"
+#include "client/renderer/core/render_viewport.h"
 
 namespace client_fw
 {
@@ -44,6 +45,26 @@ namespace client_fw
 	void Render::SetMainCamera(const SPtr<RenderCameraComponent>& camera_comp)
 	{
 		s_render_system->SetMainCamera(camera_comp);
+	}
+
+	void Render::ExecutedResizingTexture()
+	{
+		s_render_system->SetWaitGpuComplete(true);
+	}
+
+	void Render::EnableIngameViewport(const IVec2& position, const IVec2& size)
+	{
+		s_render_system->EnableIngameViewport(position, size);
+	}
+
+	void Render::DisableIngameViewport()
+	{
+		s_render_system->DisableIngameViewport();
+	}
+
+	const UPtr<IngameViewport>& Render::GetIngameViewport()
+	{
+		return s_render_system->GetIngameViewport();
 	}
 
 	Vec2 Render::GetWindowSize()

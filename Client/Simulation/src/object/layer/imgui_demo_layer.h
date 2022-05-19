@@ -1,8 +1,10 @@
 #pragma once
 #include "client/object/layer/core/layer.h"
 
-namespace client_fw
+namespace simulation
 {
+	using namespace client_fw;
+
 	class ImGuiDemoLayer : public Layer
 	{
 	public:

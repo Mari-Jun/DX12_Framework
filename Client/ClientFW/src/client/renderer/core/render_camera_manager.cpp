@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "client/renderer/core/render_camera_manager.h"
 #include "client/renderer/core/light_manager.h"
+#include "client/renderer/core/render.h"
 #include "client/renderer/core/render_resource_manager.h"
 #include "client/renderer/frameresource/core/frame_resource_manager.h"
 #include "client/renderer/frameresource/core/frame_resource.h"
@@ -65,8 +66,12 @@ namespace client_fw
 			}
 		}
 
-		while (resize_count--)
-			m_render_cameras.pop_back();
+		if (resize_count > 0)
+		{
+			Render::ExecutedResizingTexture();
+			while (resize_count--)
+				m_render_cameras.pop_back();
+		}
 	}
 
 	void RenderCameraManager::UpdateRenderCameras(ID3D12Device* device)
