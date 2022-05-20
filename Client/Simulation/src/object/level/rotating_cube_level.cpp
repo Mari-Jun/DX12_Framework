@@ -3,26 +3,35 @@
 #include <client/object/actor/light.h>
 
 #include "object/level/rotating_cube_level.h"
+
+#include "object/levelsetting/initialize/rotating_cube_level_init_node_manager.h"
+
 #include "object/actor/rotating_cube.h"
 
 namespace simulation
 {
+	UPtr<RotatingCubeLevelInitNodeManager> RotatingCubeLevel::m_init_node_manager = nullptr;
+
 	RotatingCubeLevel::RotatingCubeLevel()
-		: Level("rotating cube level")
+		: SimulationLevel("rotating cube level")
 	{
 		m_rotating_cube = CreateSPtr<RotatingCube>();
+		if (m_init_node_manager == nullptr)
+			m_init_node_manager = CreateUPtr<RotatingCubeLevelInitNodeManager>();
 	}
 
 	bool RotatingCubeLevel::Initialize()
 	{
 		SpawnActor(m_rotating_cube);
-		m_rotating_cube->SetPosition(Vec3(0.f, 0.f, 500.f));
+		m_rotating_cube->SetPosition(m_init_pos);
+		m_rotating_cube->SetScale(m_init_scale);
 
-		auto d_light = CreateSPtr<DirectionalLight>();
-		d_light->SetLightColor(Vec3(1.0f, 1.0f, 1.0f));
-		d_light->SetRotation(math::ToRadian(45.0f), 0.0f, 0.0f);
-		d_light->DisableShadow();
-		SpawnActor(d_light);
+		m_directional_light = CreateSPtr<DirectionalLight>();
+		m_directional_light->SetLightColor(Vec3(1.0f, 1.0f, 1.0f));
+		m_directional_light->SetRotation(math::ToRadian(45.0f), 0.0f, 0.0f);
+		if(m_enable_dir_light_shadow == false)
+			m_directional_light->DisableShadow();
+		SpawnActor(m_directional_light);
 
 		return true;
 	}
@@ -33,5 +42,11 @@ namespace simulation
 
 	void RotatingCubeLevel::Update(float delta_time)
 	{
+	}
+
+	void RotatingCubeLevel::ExecuteLevelInitNodes()
+	{
+		m_init_node_manager->SetOwner(std::static_pointer_cast<RotatingCubeLevel>(shared_from_this()));
+		m_init_node_manager->ExecuteLevelSettingNodes();
 	}
 }
