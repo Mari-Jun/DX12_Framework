@@ -7,6 +7,7 @@
 #include "object/layer/docking_layer.h"
 #include "object/layer/viewport_layer.h"
 #include "object/layer/select_level_layer.h"
+#include "object/layer/level_setting_layer.h"
 
 using namespace client_fw;
 
@@ -18,6 +19,7 @@ namespace simulation
 		SimulationApp() : Application(L"Simulation App")
 		{
 			m_select_level_layer = CreateSPtr<SelectLevelLayer>();
+			m_level_setting_layer = CreateSPtr<LevelSettingLayer>();
 		}
 
 		bool Initialize() override
@@ -35,6 +37,16 @@ namespace simulation
 			RegisterLayer(CreateSPtr<DockingLayer>());
 			RegisterLayer(CreateSPtr<ViewportLayer>());
 			RegisterLayer(m_select_level_layer);
+			RegisterLayer(m_level_setting_layer);
+
+			m_select_level_layer->OnOpenEvent([this](const SPtr<SimulationLevel>& level)
+				{
+					m_level_setting_layer->SetCurrentSimulationLevel(level);
+				});
+			m_select_level_layer->OnCloseEvent([this](const SPtr<SimulationLevel>& level)
+				{
+					m_level_setting_layer->SetCurrentSimulationLevel(nullptr);
+				});
 
 			m_select_level_layer->RegisterLevel<RotatingCubeLevel>({ "open rotating cube level" });
 
@@ -48,6 +60,7 @@ namespace simulation
 
 	private:
 		SPtr<SelectLevelLayer> m_select_level_layer;
+		SPtr<LevelSettingLayer> m_level_setting_layer;
 	};
 }
 

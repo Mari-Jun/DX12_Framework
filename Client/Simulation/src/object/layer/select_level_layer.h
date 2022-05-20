@@ -4,7 +4,7 @@
 #include <client/object/level/core/level_manager.h>
 #include <client/object/level/core/level_loader.h>
 
-#include "client/object/layer/core/layer.h"
+#include <client/object/layer/core/layer.h>
 
 namespace simulation
 {
@@ -58,6 +58,7 @@ namespace simulation
 					if (ImGui::Button(("Open Level##" + num_of_level).c_str(), ImVec2(-FLT_MIN, 0)))
 					{
 						m_selected_level = level;
+						m_selected_level->SetLevelInitNodeOwner();
 						ImGui::OpenPopup(("Level Initialize Setting##" + num_of_level).c_str());
 					}
 
@@ -83,12 +84,19 @@ namespace simulation
 						if (ImGui::Button(("OK##" + num_of_level).c_str(), ImVec2(rect.z * 0.4f, 0.f)))
 						{
 							LevelManager::GetLevelManager().OpenLevel(m_selected_level, nullptr);
+							if (m_open_event != nullptr)
+							{
+								m_selected_level->SetLevelRuntimeNodeOwner();
+								m_open_event(m_selected_level);
+							}
+							m_selected_level = nullptr;
 							ImGui::CloseCurrentPopup();
 						}
 						ImGui::SameLine();
 						if (ImGui::Button(("Cancel##" + num_of_level).c_str(), ImVec2(rect.z * 0.4f, 0.f)))
 						{
 							ImGui::CloseCurrentPopup();
+							m_selected_level = nullptr;
 						}
 						ImGui::EndPopup();
 					}
@@ -103,6 +111,12 @@ namespace simulation
 	private:
 		SPtr<SimulationLevel> m_selected_level;
 		std::vector<SelectHeaderInfo> m_registered_levels_header;
+		std::function<void(const SPtr<SimulationLevel>&)> m_open_event;
+		std::function<void(const SPtr<SimulationLevel>&)> m_close_event;
+
+	public:
+		void OnOpenEvent(std::function<void(const SPtr<SimulationLevel>&)>&& function) { m_open_event = function; }
+		void OnCloseEvent(std::function<void(const SPtr<SimulationLevel>&)>&& function) { m_close_event = function; }
 	};	
 }
 

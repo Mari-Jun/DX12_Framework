@@ -13,7 +13,12 @@ namespace simulation
 		SimulationLevel(const std::string& name);
 		virtual ~SimulationLevel() = default;
 
+		virtual void SetLevelInitNodeOwner() {}
 		virtual void ExecuteLevelInitNodes() {}
+
+		virtual void SetLevelRuntimeNodeOwner() {}
+		virtual void ExecuteLevelRuntimeNodes() {}
+
 	};
 }
 

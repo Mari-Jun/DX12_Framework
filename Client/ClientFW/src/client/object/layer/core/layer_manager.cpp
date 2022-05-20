@@ -4,8 +4,11 @@
 
 namespace client_fw
 {
+	LayerManager* LayerManager::s_instance = nullptr;
+
 	LayerManager::LayerManager()
 	{
+		s_instance = this;
 	}
 
 	LayerManager::~LayerManager()

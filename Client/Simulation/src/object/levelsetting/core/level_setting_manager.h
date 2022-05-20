@@ -23,11 +23,11 @@ namespace simulation
 	};
 
 	template <class Level>
-	class LevelInitNodeManager
+	class LevelNodeManager
 	{
 	public:
-		LevelInitNodeManager() = default;
-		virtual ~LevelInitNodeManager() = default;
+		LevelNodeManager() = default;
+		virtual ~LevelNodeManager() = default;
 
 		void ExecuteLevelSettingNodes()
 		{

@@ -4,13 +4,14 @@
 
 #include "object/level/rotating_cube_level.h"
 
-#include "object/levelsetting/initialize/rotating_cube_level_init_node_manager.h"
+#include "object/levelsetting/rotating_cube_level_node_manager.h"
 
 #include "object/actor/rotating_cube.h"
 
 namespace simulation
 {
 	UPtr<RotatingCubeLevelInitNodeManager> RotatingCubeLevel::m_init_node_manager = nullptr;
+	UPtr<RotatingCubeLevelRuntimeNodeManager> RotatingCubeLevel::m_runtime_node_manager = nullptr;
 
 	RotatingCubeLevel::RotatingCubeLevel()
 		: SimulationLevel("rotating cube level")
@@ -18,6 +19,8 @@ namespace simulation
 		m_rotating_cube = CreateSPtr<RotatingCube>();
 		if (m_init_node_manager == nullptr)
 			m_init_node_manager = CreateUPtr<RotatingCubeLevelInitNodeManager>();
+		if (m_runtime_node_manager == nullptr)
+			m_runtime_node_manager = CreateUPtr<RotatingCubeLevelRuntimeNodeManager>();
 	}
 
 	bool RotatingCubeLevel::Initialize()
@@ -44,9 +47,23 @@ namespace simulation
 	{
 	}
 
-	void RotatingCubeLevel::ExecuteLevelInitNodes()
+	void RotatingCubeLevel::SetLevelInitNodeOwner()
 	{
 		m_init_node_manager->SetOwner(std::static_pointer_cast<RotatingCubeLevel>(shared_from_this()));
+	}
+
+	void RotatingCubeLevel::ExecuteLevelInitNodes()
+	{
 		m_init_node_manager->ExecuteLevelSettingNodes();
+	}
+
+	void RotatingCubeLevel::SetLevelRuntimeNodeOwner()
+	{
+		m_runtime_node_manager->SetOwner(std::static_pointer_cast<RotatingCubeLevel>(shared_from_this()));
+	}
+
+	void RotatingCubeLevel::ExecuteLevelRuntimeNodes()
+	{
+		m_runtime_node_manager->ExecuteLevelSettingNodes();
 	}
 }

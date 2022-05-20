@@ -22,12 +22,15 @@ namespace client_fw
 		void RegisterLayer(const SPtr<Layer>& layer);
 
 	private:
+		static LayerManager* s_instance;
+
 		std::vector<SPtr<Layer>> m_ready_layers;
 		std::vector<SPtr<Layer>> m_layers;
 
 		std::map<std::string, SPtr<Layer>> m_layers_map;
 
 	public:
+		inline static LayerManager& GetLayerManager() { return *s_instance; }
 		SPtr<Layer> GetLayer(const std::string& layer_name);
 	};
 }
