@@ -1,6 +1,13 @@
 #pragma once
+#include <map>
+#include <queue>
+#include <sstream>
+
+#include <include/dx12_shader_fw.h>
 #include <client/imgui/imgui.h>
+#include <client/imgui/imgui_internal.h>
 #include <client/imgui/imgui_helper.h>
+#include <client/asset/texture/texture.h>
 #include <client/object/level/core/level_manager.h>
 #include <client/object/level/core/level_loader.h>
 
@@ -10,19 +17,31 @@ namespace simulation
 {
 	using namespace client_fw;
 
-	struct SelectHeaderInfo
+	class SimulationLevel;
+
+	struct SelectLevelButtonInfo
 	{
-		std::function<void(const std::vector<std::string>&, const std::string&)> header_function;
 		std::vector<std::string> level_informations;
 		std::string num_of_level;
+		std::function<void(const std::vector<std::string>&, const std::string&, float)> button_function;
 
-		void operator() () const
+		void operator() (float width) const
 		{
-			header_function(level_informations, num_of_level);
+			button_function(level_informations, num_of_level, width);
 		}
 	};
 
-	class SimulationLevel;
+	struct SelectFolderInfo
+	{
+		std::vector<SelectLevelButtonInfo> buttons_info;
+		std::map<std::string, SPtr<SelectFolderInfo>> child_folders;
+
+		void operator() (float width) const
+		{
+			for (const auto& button : buttons_info)
+				button(width);
+		}
+	};
 
 	class SelectLevelLayer : public Layer
 	{
@@ -30,37 +49,82 @@ namespace simulation
 		SelectLevelLayer(const std::string& name = "select level layer");
 		virtual ~SelectLevelLayer() = default;
 
+		virtual bool Initialize() override;
 		virtual void Update(float delta_time) override;
 
+	private:
+		void RecursiveFolderList(const std::string& folder_name, const SPtr<SelectFolderInfo>& folder_info);
+		void UpdateLevelList();
+
+	public:
 		template<typename Level>
-		void RegisterLevel(std::vector<std::string>&& informations)
+		void RegisterLevel(const std::string& folder_path, std::vector<std::string>&& informations)
 		{
-			auto header_function = [this](const std::vector<std::string>& infos, const std::string& num_of_level)
+			if (folder_path.empty() == false)
 			{
-				auto level = CreateSPtr<Level>();
-
-				if (ImGui::CollapsingHeader(level->GetName().c_str()))
+				auto SplitPath = [](const std::string& path, char delimiter)
 				{
-					size_t info_size = std::min(infos.size(), static_cast<size_t>(5));
+					std::istringstream iss{ path };
 
+					std::string buffer;
+
+					std::queue<std::string> ret;
+
+					while (getline(iss, buffer, delimiter))
+						ret.push(buffer);
+
+					return ret;
+				};
+
+				std::queue<std::string> folders = SplitPath(folder_path, '/');
+
+				SPtr<SelectFolderInfo> select_folder = m_registered_levels_folder;
+
+				while (folders.empty() == false)
+				{
+					std::string folder_name = folders.front();
+					folders.pop();
+
+					if (select_folder->child_folders.find(folder_name) == select_folder->child_folders.cend())
+						select_folder->child_folders[folder_name] = CreateSPtr<SelectFolderInfo>();
+
+					select_folder = select_folder->child_folders[folder_name];
+				}
+
+				static auto LevelButtonFunction = [this](const std::vector<std::string>& infos,
+					const std::string& num_of_level, float width)
+				{
+					auto level = CreateSPtr<Level>();
+
+					if (m_level_texture == nullptr || m_level_texture->GetResource() == nullptr)
+						return;
+
+					ImGui::BeginGroup();
+					ImGui::ImageButton((ImTextureID)m_level_texture->GetGPUAddress(), ImVec2(width, width));
+					if (ImGui::IsItemHovered())
+					{
+						ImGui::BeginTooltipEx(ImGuiTooltipFlags_None, ImGuiWindowFlags_AlwaysAutoResize);
+						ImGui::PushFont(ImGuiHelper::s_jua_20);
+						ImGui::Text(level->GetName().c_str());
+						ImGui::PopFont();
+						ImGui::Separator();
+						for (const auto& info : infos)
+							ImGui::BulletText(info.c_str());
+						ImGui::EndTooltip();
+
+						if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+						{
+							m_selected_level = level;
+							m_selected_level->SetLevelInitNodeOwner();
+							ImGui::OpenPopup(("Level Initialize Setting##" + num_of_level).c_str());
+						}
+					}
+					ImGui::PushTextWrapPos(ImGui::GetCursorPos().x + width);
+					ImGui::Text(level->GetName().c_str());
+					ImGui::PopTextWrapPos();
+					ImGui::EndGroup();
+						
 					ImGuiStyle& style = ImGui::GetStyle();
-					float childHeight = ImGui::GetTextLineHeight() * info_size + style.ItemSpacing.y * (info_size - 1) +
-						style.ScrollbarSize + style.WindowPadding.y * 2.0f;
-					ImGui::BeginChild((level->GetName() + num_of_level).c_str(), ImVec2(0, childHeight), true, ImGuiWindowFlags_AlwaysHorizontalScrollbar);
-					ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
-					for (const auto& info : infos)
-					{
-						ImGui::BulletText(info.c_str());
-					}
-					ImGui::PopStyleVar();
-					ImGui::EndChild();
-
-					if (ImGui::Button(("Open Level##" + num_of_level).c_str(), ImVec2(-FLT_MIN, 0)))
-					{
-						m_selected_level = level;
-						m_selected_level->SetLevelInitNodeOwner();
-						ImGui::OpenPopup(("Level Initialize Setting##" + num_of_level).c_str());
-					}
 
 					ImGuiViewport* viewport = ImGui::GetMainViewport();
 					ImVec2 size = viewport->WorkSize;
@@ -79,7 +143,7 @@ namespace simulation
 
 						float width = rect.z * 0.8f;
 						width += style.ItemSpacing.x;
-						ImGuiHelper::AlignFormWitdh(width);
+						ImGuiHelper::AlignFormWidth(width);
 
 						if (ImGui::Button(("OK##" + num_of_level).c_str(), ImVec2(rect.z * 0.4f, 0.f)))
 						{
@@ -100,24 +164,28 @@ namespace simulation
 						}
 						ImGui::EndPopup();
 					}
-				}
-			};
+				};
 
-			std::string num_of_level = std::to_string(m_registered_levels_header.size());
-
-			m_registered_levels_header.push_back({ header_function, informations, num_of_level });
+				std::string num_of_level = std::to_string(m_num_of_level++);
+				select_folder->buttons_info.push_back(SelectLevelButtonInfo{ informations, num_of_level, LevelButtonFunction });
+			}
 		}
 
 	private:
+		INT m_num_of_level = 0;
 		SPtr<SimulationLevel> m_selected_level;
-		std::vector<SelectHeaderInfo> m_registered_levels_header;
+		SPtr<SelectFolderInfo> m_registered_levels_folder;
+		SPtr<SelectFolderInfo> m_selected_folder;
+
+		SPtr<Texture> m_level_texture;
+
 		std::function<void(const SPtr<SimulationLevel>&)> m_open_event;
 		std::function<void(const SPtr<SimulationLevel>&)> m_close_event;
 
 	public:
 		void OnOpenEvent(std::function<void(const SPtr<SimulationLevel>&)>&& function) { m_open_event = function; }
 		void OnCloseEvent(std::function<void(const SPtr<SimulationLevel>&)>&& function) { m_close_event = function; }
-	};	
+	};
 }
 
 

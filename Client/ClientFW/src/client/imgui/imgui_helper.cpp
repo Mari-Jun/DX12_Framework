@@ -3,6 +3,11 @@
 
 namespace client_fw
 {
+	ImFont* ImGuiHelper::s_jua_14 = nullptr;
+	ImFont* ImGuiHelper::s_jua_20 = nullptr;
+	ImFont* ImGuiHelper::s_jua_24 = nullptr;
+	ImFont* ImGuiHelper::s_jua_32 = nullptr;
+
 	ImVec4 ImGuiHelper::GetImGuiWindowSize()
 	{
 		ImVec2 vMin = ImGui::GetWindowContentRegionMin();
@@ -28,7 +33,7 @@ namespace client_fw
 		return result;
 	}
 
-	void ImGuiHelper::AlignFormWitdh(float width, float alignment)
+	void ImGuiHelper::AlignFormWidth(float width, float alignment)
 	{
 		ImGuiStyle& style = ImGui::GetStyle();
 		float avail = ImGui::GetContentRegionAvail().x;
@@ -37,4 +42,12 @@ namespace client_fw
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + offset);
 	}
 
+	void ImGuiHelper::GenerateJuaFonts()
+	{
+		ImGuiIO& io = ImGui::GetIO(); (void)io;
+		s_jua_14 = io.Fonts->AddFontFromFileTTF("../Contents/Fonts/BMJUA_ttf.ttf", 14.f, nullptr, io.Fonts->GetGlyphRangesKorean());
+		s_jua_20 = io.Fonts->AddFontFromFileTTF("../Contents/Fonts/BMJUA_ttf.ttf", 20.f, nullptr, io.Fonts->GetGlyphRangesKorean());
+		s_jua_24 = io.Fonts->AddFontFromFileTTF("../Contents/Fonts/BMJUA_ttf.ttf", 24.f, nullptr, io.Fonts->GetGlyphRangesKorean());
+		s_jua_32 = io.Fonts->AddFontFromFileTTF("../Contents/Fonts/BMJUA_ttf.ttf", 32.f, nullptr, io.Fonts->GetGlyphRangesKorean());
+	}
 }

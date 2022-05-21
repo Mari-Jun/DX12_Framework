@@ -48,7 +48,7 @@ namespace simulation
 					m_level_setting_layer->SetCurrentSimulationLevel(nullptr);
 				});
 
-			m_select_level_layer->RegisterLevel<RotatingCubeLevel>({ "open rotating cube level" });
+			m_select_level_layer->RegisterLevel<RotatingCubeLevel>("Rendering/Test", { u8"회전하는 큐브가 있습니다." });
 
 			return result;
 		}
