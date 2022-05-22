@@ -96,9 +96,6 @@ namespace simulation
 				{
 					auto level = CreateSPtr<Level>();
 
-					if (m_level_texture == nullptr || m_level_texture->GetResource() == nullptr)
-						return;
-
 					ImGui::BeginGroup();
 					ImGui::ImageButton((ImTextureID)m_level_texture->GetGPUAddress(), ImVec2(width, width));
 					if (ImGui::IsItemHovered())

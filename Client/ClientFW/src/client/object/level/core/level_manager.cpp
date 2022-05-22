@@ -76,7 +76,7 @@ namespace client_fw
 			m_ready_level = nullptr;
 		}
 
-		if (m_cur_level != nullptr)
+		if (m_cur_level != nullptr && m_cur_level->GetLevelState() == eLevelState::kInGame)
 		{
 #ifdef __USE_LEVEL_CPU_TIME__
 			clock_t l_start, l_end;
@@ -105,7 +105,7 @@ namespace client_fw
 
 	void LevelManager::UpdateWorldMatrix()
 	{
-		if (m_cur_level != nullptr)
+		if (m_cur_level != nullptr && m_cur_level->GetLevelState() == eLevelState::kInGame)
 		{
 			m_cur_level->UpdateWorldMatrix();
 		}

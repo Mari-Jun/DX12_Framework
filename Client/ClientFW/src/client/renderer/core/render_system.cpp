@@ -270,6 +270,14 @@ namespace client_fw
 				m_ingame_viewport->PostDraw(command_list);
 			}
 		}
+		else
+		{
+			if (m_ingame_viewport != nullptr)
+			{
+				m_ingame_viewport->PreDraw(command_list);
+				m_ingame_viewport->PostDraw(command_list);
+			}
+		}
 	}
 
 	void RenderSystem::DrawFinalView(ID3D12GraphicsCommandList* command_list) const
