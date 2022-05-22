@@ -58,7 +58,7 @@ namespace simulation
 					if (Input::IsKeyPressed(eKey::kLButton))
 						Input::SetInputMode(eInputMode::kGameOnly);
 					if (Input::IsKeyPressed(eKey::kEscape))
-						Input::SetInputMode(eInputMode::kUIOnly);
+						Input::SetInputMode(eInputMode::kEditor);
 
 					rect = ImGuiHelper::GetImGuiWindowSize();
 

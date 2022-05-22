@@ -127,19 +127,20 @@ namespace client_fw
 	{
 		switch (input_mode)
 		{
-		case client_fw::eInputMode::kUIOnly:
+		case eInputMode::kUIOnly:
 			Input::SetHideCursor(false);
 			Input::SetClipCursor(true);
 			break;
-		case client_fw::eInputMode::kUIAndGame:
+		case eInputMode::kUIAndGame:
 			Input::SetHideCursor(false);
 			Input::SetClipCursor(true);
 			break;
-		case client_fw::eInputMode::kGameOnly:
+		case eInputMode::kGameOnly:
 			Input::SetHideCursor(true);
 			Input::SetClipCursor(true);
 			break;
-		case client_fw::eInputMode::kInActive:
+		case eInputMode::kEditor:
+		case eInputMode::kInActive:
 			Input::SetHideCursor(false);
 			Input::SetClipCursor(false);
 			break;

@@ -29,12 +29,14 @@ namespace simulation
 		{
 			bool result = Application::Initialize();
 
-			RegisterPressedEvent("Input Mode Game Only", std::vector{ EventKeyInfo{eKey::k1, {eAdditionalKey::kControl}} },
+			RegisterPressedEvent("Input Mode Game Only", std::vector{ EventKeyInfo{eKey::k1, {eAdditionalKey::kControl, eAdditionalKey::kShift}} },
 				[]()->bool { Input::SetInputMode(eInputMode::kGameOnly); return true;  });
-			RegisterPressedEvent("Input Mode Game And UI", std::vector{ EventKeyInfo{eKey::k2, {eAdditionalKey::kControl}} },
+			RegisterPressedEvent("Input Mode Game And UI", std::vector{ EventKeyInfo{eKey::k2, {eAdditionalKey::kControl, eAdditionalKey::kShift}} },
 				[]()->bool { Input::SetInputMode(eInputMode::kUIAndGame); return true;  });
-			RegisterPressedEvent("Input Mode UI Only", std::vector{ EventKeyInfo{eKey::k3, {eAdditionalKey::kControl}} },
+			RegisterPressedEvent("Input Mode UI Only", std::vector{ EventKeyInfo{eKey::k3, {eAdditionalKey::kControl, eAdditionalKey::kShift}} },
 				[]()->bool { Input::SetInputMode(eInputMode::kUIOnly); return true;  });
+			RegisterPressedEvent("Input Mode Editor Only", std::vector{ EventKeyInfo{eKey::k4, {eAdditionalKey::kControl, eAdditionalKey::kShift}} },
+				[]()->bool { Input::SetInputMode(eInputMode::kEditor); return true;  });
 
 			//RegisterLayer(CreateSPtr<ImGuiDemoLayer>());
 			RegisterLayer(CreateSPtr<DockingLayer>());

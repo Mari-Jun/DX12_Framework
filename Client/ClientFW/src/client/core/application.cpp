@@ -310,7 +310,7 @@ namespace client_fw
 
 	LRESULT CALLBACK Application::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
-		if (Input::GetInputMode() == eInputMode::kUIAndGame || Input::GetInputMode() == eInputMode::kUIOnly)
+		if (Input::GetInputMode() == eInputMode::kEditor)
 		{
 			if (ImGui_ImplWin32_WndProcHandler(hWnd, message, wParam, lParam))
 				return true;
@@ -336,7 +336,7 @@ namespace client_fw
 			break;
 		case WM_ACTIVATE:
 		{
-			static eInputMode s_input_mode = eInputMode::kUIOnly;
+			static eInputMode s_input_mode = eInputMode::kEditor;
 			switch (wParam)
 			{
 			case WA_ACTIVE:
