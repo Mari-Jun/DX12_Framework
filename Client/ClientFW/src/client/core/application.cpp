@@ -158,18 +158,18 @@ namespace client_fw
 
 	void Application::Update(float delta_time)
 	{
+		m_renderer->UpdateImGui();
+		m_layer_manager->Update(delta_time);
+
 		m_level_manager->Update(delta_time);
 		m_physics_world->Update(delta_time);
 		m_user_interface_manager->Update(delta_time);
 		m_level_manager->UpdateWorldMatrix();
+
 		if (m_renderer->Update() == false)
 		{
 			LOG_ERROR("Render Update Error");
 			SetAppState(eAppState::kDead);
-		}
-		else
-		{
-			m_layer_manager->Update(delta_time);
 		}
 		m_event_system->Update();
 	}

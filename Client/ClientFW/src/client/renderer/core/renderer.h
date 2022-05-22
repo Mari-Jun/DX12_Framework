@@ -19,6 +19,7 @@ namespace client_fw
 		bool Update();
 		bool Render();
 
+		bool UpdateImGui();
 		bool UpdateViewport();
 
 	private:

@@ -1,5 +1,8 @@
 #include <include/client_core.h>
 
+#include <client/object/actor/light.h>
+#include <client/object/component/util/rotating_movement_component.h>
+
 #include "object/actor/rotating_cube.h"
 
 #include "object/level/rotating_cube_level.h"
@@ -9,7 +12,7 @@ namespace simulation
 {
 	RotatingCubeLevelInitNodeManager::RotatingCubeLevelInitNodeManager()
 	{
-		static auto transform_func = [](const SPtr<RotatingCubeLevel>& level)
+		static auto TransformFunc = [](const SPtr<RotatingCubeLevel>& level)
 		{
 			static Vec3 pos = Vec3(0.f, 0.f, 500.f);
 			ImGui::DragFloat3("Position", (float*)&pos, 0.5f, -FLT_MAX, FLT_MAX, "%.4f");
@@ -20,7 +23,9 @@ namespace simulation
 			level->SetInitScale(scale);
 		};
 
-		static auto shadow_func = [](const SPtr<RotatingCubeLevel>& level)
+		RegisterSettingHeaderNode("Rotating Cube", { { "transform", TransformFunc } });
+
+		static auto ShadowFunc = [](const SPtr<RotatingCubeLevel>& level)
 		{
 			static bool enable_shadow = false;
 
@@ -28,13 +33,12 @@ namespace simulation
 			level->EnableDirectionalLightShadow(enable_shadow);
 		};
 
-		RegisterSettingHeaderNode("Rotating Cube", { { "transform", transform_func } });
-		RegisterSettingHeaderNode("Directional Light", { { "shadow", shadow_func } });
+		RegisterSettingHeaderNode("Directional Light", { { "shadow", ShadowFunc } });
 	}
 
 	RotatingCubeLevelRuntimeNodeManager::RotatingCubeLevelRuntimeNodeManager()
 	{
-		static auto transform_func = [](const SPtr<RotatingCubeLevel>& level)
+		static auto CubeTransformFunc = [](const SPtr<RotatingCubeLevel>& level)
 		{
 			const auto& cube = level->GetRotatingCube();
 
@@ -51,6 +55,77 @@ namespace simulation
 			}
 		};
 
-		RegisterSettingHeaderNode("Rotating Cube", { { "transform", transform_func } });
+		static auto RotatingCompFunc = [](const SPtr<RotatingCubeLevel>& level)
+		{
+			const auto& rot_comp = level->GetRotatingCube()->GetRotatingComponent();
+
+			Vec3 rotating_rate = rot_comp->GetRotatingRate();
+			if (ImGui::DragFloat3("rotating rate", (float*)&rotating_rate, 0.5f, -FLT_MAX, FLT_MAX, "%.3f"))
+			{
+				rot_comp->SetRotatingRate(rotating_rate);
+			}
+		};
+
+		RegisterSettingHeaderNode("Rotating cube", { 
+			{ "transform", CubeTransformFunc },
+			{ "rotating component", RotatingCompFunc }
+			});
+
+		static auto LightTransformFunc = [](const SPtr<RotatingCubeLevel>& level)
+		{
+			const auto& directional_light = level->GetDirectionalLight();
+
+			Vec3 rot = quat::QuaternionToEuler(directional_light->GetRotation());
+			rot.x = math::ToDegrees(rot.x);
+			rot.y = math::ToDegrees(rot.y);
+			rot.z = math::ToDegrees(rot.z);
+			if (ImGui::DragFloat3("Rotation", (float*)&rot, 0.5f, -180.0f, 180.0f, "%.4f"))
+			{
+				directional_light->SetRotation(quat::CreateQuaternionFromRollPitchYaw(
+					math::ToRadian(rot.x), math::ToRadian(rot.y), math::ToRadian(rot.z)));
+			}
+		};
+
+		static auto LightInfoFunc = [](const SPtr<RotatingCubeLevel>& level)
+		{
+			const auto& directional_light = level->GetDirectionalLight();
+
+			Vec3 color = directional_light->GetLightColor();
+			if (ImGui::ColorEdit3("Color", (float*)&color))
+			{
+				directional_light->SetLightColor(color);
+			}
+
+			float intensity = directional_light->GetLightIntensity();
+			if (ImGui::DragFloat("Intensity", &intensity, 0.05f, 0.0f, 1000.0f, "%.4f"))
+			{
+				directional_light->SetLightIntensity(intensity);
+			}
+		};
+
+		static auto ShadowVisibilityFunc = [](const SPtr<RotatingCubeLevel>& level)
+		{
+			const auto& directional_light = level->GetDirectionalLight();
+
+			bool visible = directional_light->GetShadowVisibility();
+
+			if (directional_light->IsUseShadow() == false)
+				ImGui::BeginDisabled(true);
+		
+			if (ImGui::Checkbox("shadow visibility", &visible))
+			{
+				//현재 Visibility에 오류가 존재함
+				directional_light->SetShadowVisibility(visible);
+			}
+
+			if (directional_light->IsUseShadow() == false)
+				ImGui::EndDisabled();
+		};
+
+		RegisterSettingHeaderNode("Directional light", {
+			{ "transform", LightTransformFunc },
+			{ "light info", LightInfoFunc },
+			{ "shadow visibility", ShadowVisibilityFunc },
+			});
 	}
 }

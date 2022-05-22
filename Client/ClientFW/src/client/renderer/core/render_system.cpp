@@ -149,6 +149,12 @@ namespace client_fw
 		clock_t l_start, l_end;
 		l_start = clock();
 #endif
+		if (m_ready_ingame_viewport != nullptr)
+		{
+			m_ready_ingame_viewport->Initialize(device);
+			SetWaitGpuComplete(true);
+		}
+
 		m_render_camera_manager->Update(device,
 			[this](ID3D12Device* device) {
 				m_graphics_render_levels.at(eRenderLevelType::kOpaque)->Update(device);
@@ -174,11 +180,8 @@ namespace client_fw
 		}
 		m_graphics_render_levels.at(eRenderLevelType::kUI)->Update(device);
 
-
 		for (const auto& [level_type, render_level] : m_graphics_render_levels)
 			render_level->UpdateFrameResource(device);
-
-		m_imgui_system->Update(device);
 
 #ifdef __USE_RENDER_UPDATE_CPU_TIME__
 		l_end = clock();
@@ -190,12 +193,16 @@ namespace client_fw
 #endif
 	}
 
+	void RenderSystem::UpdateImGui(ID3D12Device* device)
+	{
+		m_imgui_system->Update(device);
+	}
+
 	void RenderSystem::UpdateInGameViewport(ID3D12Device* device)
 	{
 		if (m_ready_ingame_viewport != nullptr)
 		{
 			m_ingame_viewport = std::move(m_ready_ingame_viewport);
-			m_ingame_viewport->Initialize(device);
 			m_ready_ingame_viewport = nullptr;
 		}
 	}

@@ -171,6 +171,12 @@ namespace client_fw
 		return true;
 	}
 
+	bool Renderer::UpdateImGui()
+	{
+		m_render_system->UpdateImGui(m_device.Get());
+		return true;
+	}
+
 	bool Renderer::Render()
 	{
 		const auto& frame_resource = m_frame_resource_manager->GetCurrentFrameResource();

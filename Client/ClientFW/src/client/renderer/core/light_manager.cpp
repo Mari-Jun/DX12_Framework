@@ -120,10 +120,10 @@ namespace client_fw
 		for (const auto& light : m_directional_lights)
 		{
 			RSLightData light_data;
-			light_data.light_color = light->GetLightColor();
+			light_data.light_color = light->GetLightColor() * light->GetLightIntensity();
 			light_data.light_direction = light->GetOwner().lock()->GetForward();
 			light->SetLightManagerRegisteredIndex(light_index++);
-			light_data.use_shadow = light->IsUseShadow() && light->GetShadowVisibility();
+			light_data.use_shadow = light->IsUseShadow() & light->GetShadowVisibility();
 			light_data.shadow_texture_data_index = shadow_index;
 			lights_data.emplace_back(std::move(light_data));
 
@@ -169,10 +169,10 @@ namespace client_fw
 		for (const auto& light : m_point_lights)
 		{
 			RSLightData light_data;
-			light_data.light_color = light->GetLightColor();
+			light_data.light_color = light->GetLightColor() * light->GetLightIntensity();
 			light_data.light_position = light->GetWorldPosition();
 			light_data.attenuation_radius = light->GetAttenuationRadius();
-			light_data.use_shadow = light->IsUseShadow() && light->GetShadowVisibility();
+			light_data.use_shadow = light->IsUseShadow() & light->GetShadowVisibility();
 			light_data.is_static_light = (light->GetOwner().lock()->GetMobilityState() != eMobilityState::kMovable);
 			light_data.shadow_texture_data_index = shadow_index;
 			light->SetLightManagerRegisteredIndex(light_index++);
@@ -198,13 +198,13 @@ namespace client_fw
 		for (const auto& light : m_spot_lights)
 		{
 			RSLightData light_data;
-			light_data.light_color = light->GetLightColor();
+			light_data.light_color = light->GetLightColor() * light->GetLightIntensity();
 			light_data.light_position = light->GetWorldPosition();
 			light_data.light_direction = light->GetWorldForward();
 			light_data.attenuation_radius = light->GetAttenuationRadius();
 			light_data.cone_inner_angle = light->GetConeInnerAngle();
 			light_data.cone_outer_angle = light->GetConeOuterAngle();
-			light_data.use_shadow = light->IsUseShadow() && light->GetShadowVisibility();
+			light_data.use_shadow = light->IsUseShadow() & light->GetShadowVisibility();
 			light_data.is_static_light = (light->GetOwner().lock()->GetMobilityState() != eMobilityState::kMovable);
 			light_data.shadow_texture_data_index = shadow_index;
 			light->SetLightManagerRegisteredIndex(light_index++);

@@ -38,6 +38,7 @@ namespace client_fw
 		void Shutdown();
 
 		void Update(ID3D12Device* device);
+		void UpdateImGui(ID3D12Device* device);
 		void UpdateInGameViewport(ID3D12Device* device);
 		void PreDraw(ID3D12Device* device, ID3D12GraphicsCommandList* command_list) const;
 		void Draw(ID3D12GraphicsCommandList* command_list) const;

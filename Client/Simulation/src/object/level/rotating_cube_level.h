@@ -38,6 +38,7 @@ namespace simulation
 
 	public:
 		const SPtr<RotatingCube>& GetRotatingCube() const { return m_rotating_cube; }
+		const SPtr<DirectionalLight>& GetDirectionalLight() const { return m_directional_light; }
 
 	private:
 		static UPtr<RotatingCubeLevelInitNodeManager> m_init_node_manager;

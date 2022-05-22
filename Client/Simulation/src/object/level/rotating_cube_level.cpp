@@ -17,6 +17,7 @@ namespace simulation
 		: SimulationLevel("rotating cube level")
 	{
 		m_rotating_cube = CreateSPtr<RotatingCube>();
+		m_directional_light = CreateSPtr<DirectionalLight>(eMobilityState::kMovable);
 		if (m_init_node_manager == nullptr)
 			m_init_node_manager = CreateUPtr<RotatingCubeLevelInitNodeManager>();
 		if (m_runtime_node_manager == nullptr)
@@ -25,18 +26,19 @@ namespace simulation
 
 	bool RotatingCubeLevel::Initialize()
 	{
+		bool ret = SimulationLevel::Initialize();
+
 		SpawnActor(m_rotating_cube);
 		m_rotating_cube->SetPosition(m_init_pos);
 		m_rotating_cube->SetScale(m_init_scale);
 
-		m_directional_light = CreateSPtr<DirectionalLight>();
 		m_directional_light->SetLightColor(Vec3(1.0f, 1.0f, 1.0f));
 		m_directional_light->SetRotation(math::ToRadian(45.0f), 0.0f, 0.0f);
 		if(m_enable_dir_light_shadow == false)
 			m_directional_light->DisableShadow();
 		SpawnActor(m_directional_light);
 
-		return true;
+		return ret;
 	}
 
 	void RotatingCubeLevel::Shutdown()

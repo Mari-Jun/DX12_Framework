@@ -351,7 +351,8 @@ namespace client_fw
 
 		for (const auto& camera : m_shadow_cascade_cameras)
 		{
-			if (camera->GetRenderCamera().lock()->GetCameraState() == eCameraState::kActive)
+			if (camera->GetCameraState() == eCameraState::kActive && 
+				camera->GetRenderCamera().lock()->GetCameraState() == eCameraState::kActive)
 			{
 				const auto& shadow_cascade_texture = camera->GetShadowArrayTexture();
 

@@ -25,6 +25,9 @@ namespace simulation
 
 	private:
 		SPtr<RotatingMovementComponent> m_rotating_component;
+
+	public:
+		const SPtr<RotatingMovementComponent>& GetRotatingComponent() const { return m_rotating_component; }
 	};
 }
 

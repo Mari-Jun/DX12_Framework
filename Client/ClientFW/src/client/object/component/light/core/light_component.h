@@ -25,12 +25,15 @@ namespace client_fw
 	protected:
 		eLightType m_light_type;
 		Vec3 m_light_color = Vec3(1.f, 1.f, 1.f);
+		float m_light_intensity = 1.f;
 		UINT m_light_manager_registered_index = 0;
 
 	public:
 		eLightType GetLightType() const { return m_light_type; }
 		const Vec3& GetLightColor() const { return m_light_color; }
-		void SetLightColor(const Vec3& color) { m_light_color = color; }
+		void SetLightColor(const Vec3& color);
+		float GetLightIntensity() const { return m_light_intensity; }
+		void SetLightIntensity(float intensity) { m_light_intensity = intensity; }
 		UINT GetLightManagerRegisteredIndex() const { return m_light_manager_registered_index; }
 		void SetLightManagerRegisteredIndex(UINT index) { m_light_manager_registered_index = index; }
 
