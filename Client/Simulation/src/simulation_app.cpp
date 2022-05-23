@@ -2,6 +2,7 @@
 #include <client/core/entry_point.h>
 
 #include "object/level/rotating_cube_level.h"
+#include "object/level/import_obj_mesh_level.h"
 
 #include "object/layer/imgui_demo_layer.h"
 #include "object/layer/docking_layer.h"
@@ -81,6 +82,7 @@ namespace simulation
 				});
 
 			m_select_level_layer->RegisterLevel<RotatingCubeLevel>("Rendering/Test", { u8"회전하는 큐브가 있습니다." });
+			m_select_level_layer->RegisterLevel<ImportObjMeshLevel>("Rendering/Basic", { u8"Obj mesh 파일을 Import 할 수 있습니다." });
 
 			return result;
 		}

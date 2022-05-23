@@ -7,8 +7,6 @@ namespace simulation
 {
 	using namespace client_fw;
 
-	class SimulationLevel;
-
 	template <class Level>
 	struct SettingTreeNode
 	{

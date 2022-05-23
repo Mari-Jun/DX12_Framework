@@ -73,6 +73,12 @@ namespace client_fw
 		return Vec2(static_cast<float>(window->width), static_cast<float>(window->height));
 	}
 
+	HWND Render::GetWindowHWND()
+	{
+		const auto& window = s_render_system->GetWindow();
+		return window->hWnd;
+	}
+
 	std::string Render::ConvertRenderLevelType(eRenderLevelType type)
 	{
 		switch (type)

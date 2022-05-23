@@ -71,6 +71,7 @@ namespace client_fw
 
 	public:
 		static Vec2 GetWindowSize();
+		static HWND GetWindowHWND();
 
 		static std::string ConvertRenderLevelType(eRenderLevelType type);
 		static std::string ConvertShaderType(eShaderType type);
