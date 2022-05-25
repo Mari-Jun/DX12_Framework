@@ -17,6 +17,33 @@ namespace simulation
 
 	ImportObjMeshLevelRuntimeNodeManager::ImportObjMeshLevelRuntimeNodeManager()
 	{
+		static auto TransformFunc = [](const SPtr<ImportObjMeshLevel>& level)
+		{
+			const auto& static_mesh_actor = level->GetStaticMeshActor();
+
+			Vec3 pos = static_mesh_actor->GetPosition();
+			if (ImGui::DragFloat3("Position", (float*)&pos, 0.5f, -FLT_MAX, FLT_MAX, "%.4f"))
+			{
+				static_mesh_actor->SetPosition(pos);
+			}
+
+			Vec3 rot = quat::QuaternionToEuler(static_mesh_actor->GetRotation());
+			rot.x = math::ToDegrees(rot.x);
+			rot.y = math::ToDegrees(rot.y);
+			rot.z = math::ToDegrees(rot.z);
+			if (ImGui::DragFloat3("Rotation", (float*)&rot, 0.5f, -180.0f, 180.0f, "%.4f"))
+			{
+				static_mesh_actor->SetRotation(quat::CreateQuaternionFromRollPitchYaw(
+					math::ToRadian(rot.x), math::ToRadian(rot.y), math::ToRadian(rot.z)));
+			}
+
+			Vec3 scale = static_mesh_actor->GetScale();
+			if (ImGui::DragFloat3("Scale", (float*)&scale, 0.05f, 0.0f, FLT_MAX, "%.2f"))
+			{
+				static_mesh_actor->SetScale(scale);
+			}
+		};
+
 		static auto StaticMeshPathFunc = [](const SPtr<ImportObjMeshLevel>& level)
 		{
 			std::string path;
@@ -43,7 +70,8 @@ namespace simulation
 		};
 
 		RegisterSettingHeaderNode("Static mesh actor", {
-			{"set path", StaticMeshPathFunc}
+			{"set path", StaticMeshPathFunc},
+			{"transform", TransformFunc},
 			});
 	}
 }

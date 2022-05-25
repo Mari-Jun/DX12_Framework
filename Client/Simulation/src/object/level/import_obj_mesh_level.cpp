@@ -26,6 +26,7 @@ namespace simulation
 	{
 		bool ret = SimulationLevel::Initialize();
 
+		m_static_mesh_actor->SetPosition(Vec3(0.f, 0.f, 500.f));
 		SpawnActor(m_static_mesh_actor);
 		m_directional_light->SetLightColor(Vec3(1.0f, 1.0f, 1.0f));
 		m_directional_light->SetRotation(math::ToRadian(45.0f), 0.0f, 0.0f);
