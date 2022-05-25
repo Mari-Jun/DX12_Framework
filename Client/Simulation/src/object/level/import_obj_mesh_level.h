@@ -34,6 +34,7 @@ namespace simulation
 		SPtr<DirectionalLight> m_directional_light;
 
 	public:
+		const SPtr<StaticMeshActor>& GetStaticMeshActor() const { return m_static_mesh_actor; }
 		void SetStaticMeshPath(const std::string& path);
 
 	private:
