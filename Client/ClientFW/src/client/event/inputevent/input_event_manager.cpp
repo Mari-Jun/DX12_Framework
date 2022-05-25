@@ -6,7 +6,7 @@
 namespace client_fw
 {
 	InputEventManager::InputEventManager()
-		: m_input_mode(eInputMode::kGameOnly)
+		: m_input_mode(eInputMode::kInActive)
 	{
 	}
 	
@@ -20,7 +20,7 @@ namespace client_fw
 		ExecuteEvents(m_player_controller_events, { eInputMode::kGameOnly });
 		ExecuteEvents(m_level_events, { eInputMode::kGameOnly });
 		ExecuteEvents(m_pawn_events, { eInputMode::kGameOnly });
-		ExecuteEvents(m_application_events, { eInputMode::kUIOnly, eInputMode::kGameOnly });
+		ExecuteEvents(m_application_events, { eInputMode::kEditor, eInputMode::kUIOnly, eInputMode::kGameOnly });
 	}
 
 	void InputEventManager::ExecuteEvents(const std::vector<UPtr<InputEventInfo>>& events, std::vector<eInputMode>&& modes) const
@@ -101,6 +101,7 @@ namespace client_fw
 				break;
 			case eInputOwnerType::kPlayerController:
 				DeleteEvent(m_player_controller_events, name);
+				break;
 			default:
 				break;
 			}

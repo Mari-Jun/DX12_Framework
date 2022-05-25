@@ -32,7 +32,7 @@ namespace client_fw
 		if (iter == m_cascade_shadows_camera.end())
 		{
 			cascade_camera_comp->SetRenderCamera(render_camera_comp);
-			cascade_camera_comp->SetViewport(Viewport{ 0, 0, m_shadow_texture_size, m_shadow_texture_size });
+			cascade_camera_comp->SetViewSize(IVec2(m_shadow_texture_size, m_shadow_texture_size));
 			m_owner.lock()->AttachComponent(cascade_camera_comp);
 			m_cascade_shadows_camera.emplace_back(std::move(cascade_shadow));
 		}

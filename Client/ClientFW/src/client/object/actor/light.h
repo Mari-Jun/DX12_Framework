@@ -37,10 +37,18 @@ namespace client_fw
 		{
 			return m_light_component->GetLightColor();
 		}
-
 		void SetLightColor(const Vec3& color)
 		{
 			m_light_component->SetLightColor(color);
+		}
+
+		float GetLightIntensity() const
+		{
+			return m_light_component->GetLightIntensity();
+		}
+		void SetLightIntensity(float intensity)
+		{
+			m_light_component->SetLightIntensity(intensity);
 		}
 
 	public:
@@ -50,12 +58,20 @@ namespace client_fw
 		}
 
 		//초기화 과정에서 아예 Shadow를 사용하지 않는 경우만 사용
+		bool IsUseShadow()
+		{
+			return m_light_component->IsUseShadow();
+		}
 		void DisableShadow()
 		{
 			m_light_component->DisableShadow();
 		}
 
 		// Rumtime On/Off
+		bool GetShadowVisibility() const
+		{
+			return m_light_component->GetShadowVisibility();
+		}
 		void SetShadowVisibility(bool visible)
 		{
 			m_light_component->SetShadowVisibility(visible);

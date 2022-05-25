@@ -4,12 +4,16 @@
 #include "client/core/timer.h"
 #include "client/input/input.h"
 #include "client/event/core/event_system.h"
+
 #include "client/object/level/core/level_manager.h"
 #include "client/object/level/core/level_loader.h"
 #include "client/object/level/core/level.h"
 #include "client/object/level/sharedinfo/level_shared_info.h"
 #include "client/object/ui/core/user_interface_manager.h"
+#include "client/object/layer/core/layer_manager.h"
+
 #include "client/physics/core/physics_world.h"
+
 #include "client/renderer/core/renderer.h"
 #include "client/asset/core/asset_manager.h"
 #include "client/asset/mesh/mesh_loader.h"
@@ -42,7 +46,10 @@ namespace client_fw
 		m_event_system = CreateUPtr<EventSystem>(m_window);
 		m_level_manager = CreateUPtr<LevelManager>();
 		m_user_interface_manager = CreateUPtr<UserInterfaceManager>();
+		m_layer_manager = CreateUPtr<LayerManager>();
+
 		m_physics_world = CreateUPtr<PhysicsWorld>();
+
 		m_renderer = CreateUPtr<Renderer>(m_window);
 		m_asset_manager = CreateUPtr<AssetManager>();
 	}
@@ -99,6 +106,7 @@ namespace client_fw
 	void Application::Shutdown()
 	{
 		m_level_manager->Shutdown();
+		m_layer_manager->Shutdown();
 		m_user_interface_manager->Shutdown();
 		m_physics_world->Shutdown();
 		m_renderer->Shutdown();
@@ -150,10 +158,20 @@ namespace client_fw
 
 	void Application::Update(float delta_time)
 	{
+		m_renderer->UpdateImGui();
+		m_layer_manager->Update(delta_time);
+
 		m_level_manager->Update(delta_time);
 		m_physics_world->Update(delta_time);
 		m_user_interface_manager->Update(delta_time);
 		m_level_manager->UpdateWorldMatrix();
+
+		if (m_renderer->Update() == false)
+		{
+			LOG_ERROR("Render Update Error");
+			SetAppState(eAppState::kDead);
+		}
+		m_event_system->Update();
 	}
 
 	void Application::Render()
@@ -191,19 +209,24 @@ namespace client_fw
 		Input::RegisterPressedEvent(name, std::move(keys), func, consumption, eInputOwnerType::kApplication);
 	}
 
-	void Application::OpenLevel(const SPtr<Level>& level)
+	void Application::OpenLevel(const SPtr<Level>& level) const
 	{
 		m_level_manager->OpenLevel(level, nullptr);
 	}
 
-	void Application::OpenLevel(const SPtr<Level>& level, UPtr<LevelLoader>&& level_loader)
+	void Application::OpenLevel(const SPtr<Level>& level, UPtr<LevelLoader>&& level_loader) const
 	{
 		m_level_manager->OpenLevel(level, std::move(level_loader));
 	}
 
-	void Application::CloseLevel()
+	void Application::CloseLevel() const
 	{
 		m_level_manager->CloseLevel();
+	}
+
+	void Application::RegisterLayer(const SPtr<Layer>& layer) const
+	{
+		m_layer_manager->RegisterLayer(layer);
 	}
 
 	SPtr<LevelSharedInfo> Application::CreateLevelSharedInfo() const
@@ -236,10 +259,10 @@ namespace client_fw
 		int posX = (GetSystemMetrics(SM_CXSCREEN) == m_window->width) ? 0 : (GetSystemMetrics(SM_CXSCREEN) - m_window->width) / 2;
 		int posY = (GetSystemMetrics(SM_CYSCREEN) == m_window->height) ? 0 : (GetSystemMetrics(SM_CYSCREEN) - m_window->height) / 2;
 
-		DWORD dw_style = WS_OVERLAPPED | WS_MINIMIZEBOX | /*WS_SYSMENU |*/ WS_BORDER;
+		DWORD dw_style = WS_OVERLAPPEDWINDOW;
 
 		m_window->hWnd = CreateWindowEx(WS_EX_APPWINDOW, m_app_name.c_str(), m_app_name.c_str(),
-			/*WS_OVERLAPPEDWINDOW*/dw_style, posX, posY, m_window->width, m_window->height, NULL, NULL, m_window->hInstance, NULL);
+			dw_style, posX, posY, m_window->width, m_window->height, NULL, NULL, m_window->hInstance, NULL);
 
 		if (m_window->hWnd == nullptr)
 			return false;
@@ -287,7 +310,7 @@ namespace client_fw
 
 	LRESULT CALLBACK Application::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
-		if (Input::GetInputMode() == eInputMode::kUIAndGame || Input::GetInputMode() == eInputMode::kUIOnly)
+		if (Input::GetInputMode() == eInputMode::kEditor)
 		{
 			if (ImGui_ImplWin32_WndProcHandler(hWnd, message, wParam, lParam))
 				return true;
@@ -313,7 +336,7 @@ namespace client_fw
 			break;
 		case WM_ACTIVATE:
 		{
-			static eInputMode s_input_mode = eInputMode::kUIOnly;
+			static eInputMode s_input_mode = eInputMode::kEditor;
 			switch (wParam)
 			{
 			case WA_ACTIVE:

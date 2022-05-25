@@ -28,6 +28,7 @@ namespace client_fw
 
 	void EventSystem::ExecuteEvent()
 	{
+		m_input_manager->Update();
 		m_packet_event_manager->ExecuteEventReceivedFromServer();
 		eInputMode mode = Input::GetInputMode();
 		if (mode != eInputMode::kInActive)
@@ -36,7 +37,11 @@ namespace client_fw
 			m_input_event_manager->ExecuteEvent();
 		}
 		m_message_event_manager->ExecuteEvent();
-		m_input_manager->Update();
+	}
+
+	void EventSystem::Update()
+	{
+		m_input_manager->UpdateForNextFrame();
 	}
 
 	void EventSystem::SendEventToServer()
@@ -62,8 +67,12 @@ namespace client_fw
 		case WM_RBUTTONUP:
 		case WM_MBUTTONDOWN:
 		case WM_MBUTTONUP:
+			m_input_manager->ChangeMouseKeyState(message, wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+			break;
 		case WM_MOUSEMOVE:
-			m_input_manager->ChangeMouseState(message, wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+		case WM_MOUSEHOVER:
+		case WM_MOUSELEAVE:
+			m_input_manager->ChangeMouseMoveState(message, wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 			break;
 		case WM_IME_COMPOSITION:
 			break;

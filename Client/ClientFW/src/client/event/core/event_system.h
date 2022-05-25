@@ -19,6 +19,7 @@ namespace client_fw
         EventSystem& operator=(const EventSystem&) = delete;
 
         void ExecuteEvent();
+        void Update();
         void SendEventToServer();
 
     public:

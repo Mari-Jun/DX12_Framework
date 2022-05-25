@@ -80,11 +80,39 @@ namespace client_fw
 
 	void MeshComponent::UpdateOrientedBox()
 	{
-		m_oriented_box->Transform(m_mesh->GetOrientedBox(), GetWorldMatrix());
-		Vec3 extents = m_oriented_box->GetExtents();
-		m_max_extent = extents.x;
-		m_max_extent = max(m_max_extent, extents.y);
-		m_max_extent = max(m_max_extent, extents.z);
+		if (m_mesh != nullptr)
+		{
+			m_oriented_box->Transform(m_mesh->GetOrientedBox(), GetWorldMatrix());
+			Vec3 extents = m_oriented_box->GetExtents();
+			m_max_extent = extents.x;
+			m_max_extent = max(m_max_extent, extents.y);
+			m_max_extent = max(m_max_extent, extents.z);
+		}
+	}
+
+	bool MeshComponent::RegisterToRenderSystem()
+	{
+		if (m_mesh != nullptr)
+			return RenderComponent::RegisterToRenderSystem();
+		return true;
+	}
+
+	void MeshComponent::UnregisterFromRenderSystem()
+	{
+		if (m_mesh != nullptr)
+			RenderComponent::UnregisterFromRenderSystem();
+	}
+
+	void MeshComponent::RegisterToVisualOctree()
+	{
+		if (m_mesh != nullptr)
+			RenderComponent::RegisterToVisualOctree();
+	}
+
+	void MeshComponent::UnregisterFromVisualOctree()
+	{
+		if (m_mesh != nullptr)
+			RenderComponent::UnregisterFromVisualOctree();
 	}
 
 	bool MeshComponent::IsUseLevelOfDetail() const

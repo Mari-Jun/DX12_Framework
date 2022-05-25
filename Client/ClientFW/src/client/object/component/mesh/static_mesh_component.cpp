@@ -29,8 +29,12 @@ namespace client_fw
 	{
 		if (m_mesh != nullptr)
 		{
-			if (m_draw_shader_name == Render::ConvertShaderType(eShaderType::kOpaqueMaterialMesh))
+			if (m_draw_shader_name == Render::ConvertShaderType(eShaderType::kOpaqueMaterialMesh) ||
+				m_draw_shader_name == Render::ConvertShaderType(eShaderType::kOpaqueTextureMesh) ||
+				m_draw_shader_name == Render::ConvertShaderType(eShaderType::kOpaqueNormalMapMesh))
 			{
+				m_draw_shader_name = Render::ConvertShaderType(eShaderType::kOpaqueMaterialMesh);
+
 				bool is_convert_texture = false;
 				for (UINT lod = 0; lod < m_mesh->GetLODCount(); ++lod)
 				{
@@ -52,7 +56,7 @@ namespace client_fw
 			}
 		}
 
-		return RenderComponent::RegisterToRenderSystem();
+		return MeshComponent::RegisterToRenderSystem();
 	}
 
 	SPtr<StaticMesh> StaticMeshComponent::GetStaticMesh() const
@@ -62,11 +66,33 @@ namespace client_fw
 
 	bool StaticMeshComponent::SetMesh(const std::string& file_path)
 	{
-		m_mesh = std::dynamic_pointer_cast<StaticMesh>(AssetStore::LoadMesh(file_path));
-		if (m_mesh == nullptr)
+		if (file_path.empty() == false)
 		{
-			LOG_ERROR("Could not cast Mesh[{0}] to StaticMesh", file_path);
-			return false;
+			if (m_mesh != nullptr)
+			{
+				UnregisterFromVisualOctree();
+				UnregisterFromRenderSystem();
+			}
+
+			m_mesh =  std::dynamic_pointer_cast<StaticMesh>(AssetStore::LoadMesh(file_path));
+			if (m_mesh == nullptr)
+			{
+				LOG_ERROR("Could not cast Mesh[{0}] to StaticMesh", file_path);
+			}
+			else
+			{
+				if (m_owner.lock() != nullptr)
+				{
+					RegisterToRenderSystem();
+					RegisterToVisualOctree();
+					m_update_local_matrix = true;
+				}
+
+			}
+		}
+		else
+		{
+			LOG_WARN("file path is empty");
 		}
 		return true;
 	}

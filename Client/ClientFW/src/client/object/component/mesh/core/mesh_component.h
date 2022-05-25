@@ -23,6 +23,12 @@ namespace client_fw
 		virtual void UpdateOrientedBox() override;
 
 	protected:
+		virtual bool RegisterToRenderSystem() override;
+		virtual void UnregisterFromRenderSystem() override;
+		virtual void RegisterToVisualOctree() override;
+		virtual void UnregisterFromVisualOctree() override;
+
+	protected:
 		SPtr<Mesh> m_mesh;
 		float m_max_extent = 0;
 		UINT m_level_of_detail = 0;

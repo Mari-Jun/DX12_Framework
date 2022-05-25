@@ -139,7 +139,7 @@ namespace client_fw
 
 	enum class eInputMode
 	{
-		kUIOnly, kUIAndGame, kGameOnly, kInActive,
+		kEditor, kUIOnly, kUIAndGame, kGameOnly, kInActive,
 	};
 
 	enum class eInputOwnerType

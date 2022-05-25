@@ -25,7 +25,9 @@
 #include "client/renderer/core/render_camera_manager.h"
 #include "client/renderer/core/shadow_camera_manager.h"
 #include "client/renderer/core/light_manager.h"
+
 #include "client/renderer/imgui/imgui_system.h"
+#include "client/renderer/core/render_viewport.h"
 
 #include "client/object/component/core/render_component.h"
 #include "client/object/component/mesh/core/mesh_component.h"
@@ -86,12 +88,12 @@ namespace client_fw
 			{ eRenderLevelType::kOpaque, eRenderLevelType::kShadow, eRenderLevelType::kShadowCube, eRenderLevelType::kShadowCascade });
 		//ret &= RegisterGraphicsShader<BoxShapeShader>("shape box", { eRenderLevelType::kOpaque });
 		ret &= RegisterGraphicsShader<TextureBillboardShader>(Render::ConvertShaderType(eShaderType::kTextureBillboard),
-			{eRenderLevelType::kOpaque});
+			{ eRenderLevelType::kOpaque });
 		ret &= RegisterGraphicsShader<OpaqueMaterialBaseColorBillboardShader>
-			(Render::ConvertShaderType(eShaderType::kOpaqueMaterialBaseColorBillboard), 
+			(Render::ConvertShaderType(eShaderType::kOpaqueMaterialBaseColorBillboard),
 				{ eRenderLevelType::kOpaque });
 		ret &= RegisterGraphicsShader<MaskedMaterialBaseColorBillboardShader>
-			(Render::ConvertShaderType(eShaderType::kMaskedMaterialBaseColorBillboard), 
+			(Render::ConvertShaderType(eShaderType::kMaskedMaterialBaseColorBillboard),
 				{ eRenderLevelType::kOpaque });
 		ret &= RegisterGraphicsShader<OpaqueMaterialTextureBillboardShader>
 			(Render::ConvertShaderType(eShaderType::kOpaqueMaterialTextureBillboard),
@@ -147,6 +149,12 @@ namespace client_fw
 		clock_t l_start, l_end;
 		l_start = clock();
 #endif
+		if (m_ready_ingame_viewport != nullptr)
+		{
+			m_ready_ingame_viewport->Initialize(device);
+			SetWaitGpuComplete(true);
+		}
+
 		m_render_camera_manager->Update(device,
 			[this](ID3D12Device* device) {
 				m_graphics_render_levels.at(eRenderLevelType::kOpaque)->Update(device);
@@ -172,11 +180,8 @@ namespace client_fw
 		}
 		m_graphics_render_levels.at(eRenderLevelType::kUI)->Update(device);
 
-
 		for (const auto& [level_type, render_level] : m_graphics_render_levels)
 			render_level->UpdateFrameResource(device);
-
-		m_imgui_system->Update(device);
 
 #ifdef __USE_RENDER_UPDATE_CPU_TIME__
 		l_end = clock();
@@ -188,6 +193,19 @@ namespace client_fw
 #endif
 	}
 
+	void RenderSystem::UpdateImGui(ID3D12Device* device)
+	{
+		m_imgui_system->Update(device);
+	}
+
+	void RenderSystem::UpdateInGameViewport(ID3D12Device* device)
+	{
+		if (m_ready_ingame_viewport != nullptr)
+		{
+			m_ingame_viewport = std::move(m_ready_ingame_viewport);
+			m_ready_ingame_viewport = nullptr;
+		}
+	}
 
 	void RenderSystem::PreDraw(ID3D12Device* device, ID3D12GraphicsCommandList* command_list) const
 	{
@@ -209,35 +227,32 @@ namespace client_fw
 		m_render_asset_manager->Draw(command_list);
 		m_light_manager->Draw(command_list);
 
-		if (m_render_camera_manager->GetMainCamera() != nullptr)
-		{
-			m_shadow_camera_manager->Draw(command_list,
-				[this](ID3D12GraphicsCommandList* command_list)
-				{
-					m_graphics_render_levels.at(eRenderLevelType::kShadow)->Draw(command_list);
-				},
-				[this](ID3D12GraphicsCommandList* command_list)
-				{
-					m_graphics_render_levels.at(eRenderLevelType::kShadowCube)->Draw(command_list);
-				},
-				[this](ID3D12GraphicsCommandList* command_list)
-				{
-					m_graphics_render_levels.at(eRenderLevelType::kShadowCascade)->Draw(command_list);
-				});
+		m_shadow_camera_manager->Draw(command_list,
+			[this](ID3D12GraphicsCommandList* command_list)
+			{
+				m_graphics_render_levels.at(eRenderLevelType::kShadow)->Draw(command_list);
+			},
+			[this](ID3D12GraphicsCommandList* command_list)
+			{
+				m_graphics_render_levels.at(eRenderLevelType::kShadowCube)->Draw(command_list);
+			},
+			[this](ID3D12GraphicsCommandList* command_list)
+			{
+				m_graphics_render_levels.at(eRenderLevelType::kShadowCascade)->Draw(command_list);
+			});
 
-			m_render_camera_manager->Draw(command_list,
-				[this](ID3D12GraphicsCommandList* command_list)
-				{
-					m_graphics_render_levels.at(eRenderLevelType::kOpaque)->Draw(command_list);
-				},
-				[this](ID3D12GraphicsCommandList* command_list)
-				{
-					m_graphics_render_levels.at(eRenderLevelType::kDeferred)->Draw(command_list);
-				},
-				[this](ID3D12GraphicsCommandList* command_list)
-				{
-				});
-		}
+		m_render_camera_manager->Draw(command_list,
+			[this](ID3D12GraphicsCommandList* command_list)
+			{
+				m_graphics_render_levels.at(eRenderLevelType::kOpaque)->Draw(command_list);
+			},
+			[this](ID3D12GraphicsCommandList* command_list)
+			{
+				m_graphics_render_levels.at(eRenderLevelType::kDeferred)->Draw(command_list);
+			},
+			[this](ID3D12GraphicsCommandList* command_list)
+			{
+			});
 
 #ifdef __USE_RENDER_DRAW_CPU_TIME__
 		l_end = clock();
@@ -249,26 +264,61 @@ namespace client_fw
 #endif
 	}
 
-	void RenderSystem::DrawMainCameraView(ID3D12GraphicsCommandList* command_list) const
+	void RenderSystem::DrawInGameViewport(ID3D12GraphicsCommandList* command_list) const
 	{
 		if (m_render_camera_manager->GetMainCamera() != nullptr)
 		{
-			m_render_camera_manager->DrawMainCameraForUI(command_list);
-			m_graphics_render_levels.at(eRenderLevelType::kFinalView)->Draw(command_list);
+			if (m_ingame_viewport != nullptr)
+			{
+				m_ingame_viewport->PreDraw(command_list);
+				m_render_camera_manager->DrawMainCameraForUI(command_list);
+				m_graphics_render_levels.at(eRenderLevelType::kFinalView)->Draw(command_list);
+				m_graphics_render_levels.at(eRenderLevelType::kUI)->Draw(command_list);
+				m_ingame_viewport->PostDraw(command_list);
+			}
+		}
+		else
+		{
+			if (m_ingame_viewport != nullptr)
+			{
+				m_ingame_viewport->PreDraw(command_list);
+				m_ingame_viewport->PostDraw(command_list);
+			}
 		}
 	}
 
-	void RenderSystem::DrawUI(ID3D12GraphicsCommandList* command_list) const
+	void RenderSystem::DrawFinalView(ID3D12GraphicsCommandList* command_list) const
 	{
-		m_graphics_render_levels.at(eRenderLevelType::kUI)->Draw(command_list);
+		if (m_render_camera_manager->GetMainCamera() != nullptr)
+		{
+			if (m_ingame_viewport == nullptr)
+			{
+				m_render_camera_manager->DrawMainCameraForUI(command_list);
+				m_graphics_render_levels.at(eRenderLevelType::kFinalView)->Draw(command_list);
+				m_graphics_render_levels.at(eRenderLevelType::kUI)->Draw(command_list);
+			}
+		}
+
 		m_imgui_system->PreDraw(command_list);
 		m_imgui_system->Draw(command_list);
 	}
 
 	void RenderSystem::UpdateViewport()
 	{
-		const auto& window = m_window.lock();
-		m_render_camera_manager->UpdateMainCameraViewport(window->width, window->height);
+		if (m_ingame_viewport == nullptr)
+		{
+			const auto& window = m_window.lock();
+			m_render_camera_manager->UpdateMainCameraViewport(window->width, window->height);
+		}
+		else
+		{
+			IVec2 size;
+			if(m_ready_ingame_viewport == nullptr)
+				size = m_ingame_viewport->GetViewportSize();
+			else
+				size = m_ready_ingame_viewport->GetViewportSize();
+			m_render_camera_manager->UpdateMainCameraViewport(size.x, size.y);
+		}
 	}
 
 	void RenderSystem::UnregisterGraphicsShader(const std::string& shader_name, std::vector<eRenderLevelType>&& level_types)
@@ -422,8 +472,19 @@ namespace client_fw
 
 	void RenderSystem::SetMainCamera(const SPtr<RenderCameraComponent>& camera_comp)
 	{
-		const auto& window = m_window.lock();
 		m_render_camera_manager->SetMainCamera(camera_comp);
-		m_render_camera_manager->UpdateMainCameraViewport(window->width, window->height);
+		UpdateViewport();
+	}
+
+	void RenderSystem::EnableIngameViewport(const IVec2& position, const IVec2& size)
+	{
+		m_ready_ingame_viewport = CreateUPtr<IngameViewport>(position, size);
+		UpdateViewport();
+	}
+
+	void RenderSystem::DisableIngameViewport()
+	{
+		m_ready_ingame_viewport = nullptr;
+		m_ingame_viewport = nullptr;
 	}
 }

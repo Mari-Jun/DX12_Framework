@@ -28,6 +28,11 @@ namespace client_fw
 	{
 	}
 
+	void LightComponent::SetLightColor(const Vec3& color)
+	{
+		m_light_color = Vec3(min(color.x, 1.f), min(color.y, 1.f), min(color.z, 1.f));
+	}
+
 	SPtr<LightComponent> LightComponent::SharedFromThis()
 	{
 		return std::static_pointer_cast<LightComponent>(shared_from_this());

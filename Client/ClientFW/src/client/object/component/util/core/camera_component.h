@@ -21,15 +21,6 @@ namespace client_fw
 		kBasic, kShadow, kShadowCube, kShadowCascade
 	};
 
-	//카메라가 그리는 크기 (RenderTexture의 Size와도 같다.)
-	struct Viewport
-	{
-		LONG left = 0;
-		LONG top = 0;
-		LONG width = 100;
-		LONG height = 100;
-	};
-
 	class CameraComponent : public SceneComponent
 	{
 	protected:
@@ -43,7 +34,6 @@ namespace client_fw
 		virtual void Update(float delta_time) override;
 
 		virtual void UpdateWorldMatrix() override;
-		virtual void UpdateViewport(LONG left, LONG top, LONG width, LONG height);
 		virtual void UpdateViewMatrix();
 		virtual void UpdateProjectionMatrix();
 
@@ -55,8 +45,9 @@ namespace client_fw
 		eCameraState m_camera_state;
 		eCameraUsage m_camera_usage;
 		eProjectionMode m_projection_mode;
-		Viewport m_viewport;
-		bool m_is_updated_viewport = true;
+		IVec2 m_view_size;
+		bool m_is_updated_view_size = true;
+		bool m_require_resize_texture = false;
 		Vec3 m_camera_position;
 		Vec3 m_camera_forward;
 		Mat4 m_view_matrix;
@@ -77,8 +68,10 @@ namespace client_fw
 		eProjectionMode GetProjectionMode() const { return m_projection_mode; }
 		void SetProjectionMode(eProjectionMode mode) { m_projection_mode = mode; }
 		eCameraUsage GetCameraUsage() const { return m_camera_usage; }
-		const Viewport& GetViewport() const { return m_viewport; }
-		void SetViewport(const Viewport& viewport) { m_viewport = viewport; m_is_updated_viewport = true; }
+		const IVec2& GetViewSize() const { return m_view_size; }
+		void SetViewSize(const IVec2& view_size) { m_view_size = view_size; m_is_updated_view_size = true; }
+		bool RequireResizeTexture() const { return m_require_resize_texture; }
+		void SetRequireResizeTexture(bool value) { m_require_resize_texture = value; }
 		const Vec3& GetCameraPosition() const { return m_camera_position; }
 		const Vec3& GetCameraForward() const { return m_camera_forward; }
 		const Mat4& GetViewMatrix() const { return m_view_matrix; }

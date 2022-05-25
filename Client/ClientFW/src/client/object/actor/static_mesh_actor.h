@@ -17,6 +17,9 @@ namespace client_fw
 	protected:
 		std::string m_mesh_path;
 		SPtr<StaticMeshComponent> m_static_mesh_component;
+
+	public:
+		const SPtr<StaticMeshComponent>& GetStaticMeshComponent() const { return m_static_mesh_component; }
 	};
 }
 

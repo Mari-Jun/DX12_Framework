@@ -17,12 +17,12 @@ namespace client_fw
 
 	void ShadowCubeCameraComponent::Update(float delta_time)
 	{
-		if (m_is_updated_viewport)
+		if (m_is_updated_view_size)
 		{
-			SetAspectRatio(static_cast<float>(m_viewport.width) / static_cast<float>(m_viewport.height));
+			SetAspectRatio(static_cast<float>(m_view_size.x) / static_cast<float>(m_view_size.y));
 			UpdateProjectionMatrix();
 
-			m_is_updated_viewport = false;
+			m_is_updated_view_size = false;
 		}
 	}
 

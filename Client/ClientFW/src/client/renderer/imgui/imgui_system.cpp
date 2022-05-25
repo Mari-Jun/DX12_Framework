@@ -5,6 +5,7 @@
 #include <client/imgui/imgui.h>
 #include <client/imgui/imgui_impl_win32.h>
 #include <client/imgui/imgui_impl_dx12.h>
+#include <client/imgui/imgui_helper.h>
 
 namespace client_fw
 {
@@ -22,7 +23,9 @@ namespace client_fw
 		ImGui::CreateContext();
 
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
+		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 		//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+		ImGuiHelper::GenerateJuaFonts();
 		SytleForClientFW();
 
 		if(ImGui_ImplWin32_Init(hwnd) == false)

@@ -2,6 +2,7 @@
 #include "client/object/ui/text_ui.h"
 #include "client/renderer/text/text_helper.h"
 #include "client/asset/texture/texture.h"
+#include "client/util/file_dialog.h"
 
 namespace client_fw
 {

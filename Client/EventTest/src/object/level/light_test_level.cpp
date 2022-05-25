@@ -155,21 +155,25 @@ namespace event_test
 		//d_light->DisableShadow();
 
 		auto p_light = CreateSPtr<PointLight>();
-		p_light->SetLightColor(Vec3(400000.0f, 0.0f, 0.0f));
+		p_light->SetLightColor(Vec3(1.0f, 0.0f, 0.0f));
+		p_light->SetLightIntensity(400000.0f);
 		SpawnActor(p_light);
 
 		p_light = CreateSPtr<PointLight>();
-		p_light->SetLightColor(Vec3(0.0f, 400000.0f, 0.0f));
+		p_light->SetLightColor(Vec3(0.0f, 1.0f, 0.0f));
+		p_light->SetLightIntensity(400000.0f);
 		p_light->SetPosition(Vec3(-500.0f, 0.0f, 0.0f));
 		SpawnActor(p_light);
 
 		p_light = CreateSPtr<PointLight>();
-		p_light->SetLightColor(Vec3(0.0f, 0.0f, 400000.0f));
+		p_light->SetLightColor(Vec3(0.0f, 0.0f, 1.0f));
+		p_light->SetLightIntensity(400000.0f);
 		p_light->SetPosition(Vec3(500.0f, 0.0f, 0.0f));
 		SpawnActor(p_light);
 
 		p_light = CreateSPtr<PointLight>();
-		p_light->SetLightColor(Vec3(400000.0f, 0.0f, 400000.0f));
+		p_light->SetLightColor(Vec3(1.0f, 0.0f, 1.0f));
+		p_light->SetLightIntensity(400000.0f);
 		p_light->SetPosition(Vec3(0.0f, 0.0f, -2000.0f));
 		p_light->SetAttenuationRadius(1500.0f);
 		p_light->SetShadowTextureSize(2000);
@@ -177,19 +181,22 @@ namespace event_test
 		//p_light->SetShadowVisibility(false);
 
 		p_light = CreateSPtr<PointLight>();
-		p_light->SetLightColor(Vec3(400000.0f, 400000.0f, 0.0f));
+		p_light->SetLightColor(Vec3(1.0f, 1.0f, 0.0f));
+		p_light->SetLightIntensity(400000.0f);
 		p_light->SetPosition(Vec3(-500.0f, 0.0f, -2000.0f));
 		p_light->SetAttenuationRadius(1500.0f);
 		SpawnActor(p_light);
 
 		p_light = CreateSPtr<PointLight>();
-		p_light->SetLightColor(Vec3(0.0f, 400000.0f, 400000.0f));
+		p_light->SetLightColor(Vec3(0.0f, 1.0f, 1.0f));
+		p_light->SetLightIntensity(400000.0f);
 		p_light->SetPosition(Vec3(500.0f, 0.0f, -2000.0f));
 		p_light->SetAttenuationRadius(1500.0f);
 		SpawnActor(p_light);
 
 		auto s_light = CreateSPtr<SpotLight>();
-		s_light->SetLightColor(Vec3(0.0f, 400000.0f, 400000.0f));
+		s_light->SetLightColor(Vec3(0.0f, 1.0f, 1.0f));
+		s_light->SetLightIntensity(400000.0f);
 		s_light->SetPosition(Vec3(0.0f, 0.0f, 1200.0f));
 		s_light->SetAttenuationRadius(2000.0f);
 		s_light->SetConeOuterAngle(22.0f);
@@ -197,7 +204,8 @@ namespace event_test
 		//s_light->SetShadowVisibility(false);
 
 		s_light = CreateSPtr<SpotLight>();
-		s_light->SetLightColor(Vec3(400000.0f, 0.0f, 400000.0f));
+		s_light->SetLightColor(Vec3(1.0f, 0.0f, 1.0f));
+		s_light->SetLightIntensity(400000.0f);
 		s_light->SetPosition(Vec3(-1200.0f, 0.0f, 0.0f));
 		s_light->SetAttenuationRadius(2000.0f);
 		s_light->SetRotation(0.0f, math::ToRadian(-90.0f), 0.0f);
@@ -205,7 +213,8 @@ namespace event_test
 		SpawnActor(s_light);
 
 		s_light = CreateSPtr<SpotLight>();
-		s_light->SetLightColor(Vec3(400000.0f, 400000.0f, 0.0f));
+		s_light->SetLightColor(Vec3(1.0f, 1.0f, 0.0f));
+		s_light->SetLightIntensity(400000.0f);
 		s_light->SetPosition(Vec3(1200.0f, 0.0f, 0.0f));
 		s_light->SetAttenuationRadius(2000.0f);
 		s_light->SetRotation(0.0f, math::ToRadian(90.0f), 0.0f);
@@ -213,7 +222,8 @@ namespace event_test
 		SpawnActor(s_light);
 
 		s_light = CreateSPtr<SpotLight>();
-		s_light->SetLightColor(Vec3(0.0f, 400000.0f, 0.0f));
+		s_light->SetLightColor(Vec3(0.0f, 1.0f, 0.0f));
+		s_light->SetLightIntensity(400000.0f);
 		s_light->SetPosition(Vec3(1500.0f, 0.0f, 1500.0f));
 		s_light->SetAttenuationRadius(2000.0f);
 		s_light->SetRotation(0.0f, math::ToRadian(45.0f), 0.0f);
@@ -221,7 +231,8 @@ namespace event_test
 		SpawnActor(s_light);
 
 		s_light = CreateSPtr<SpotLight>();
-		s_light->SetLightColor(Vec3(400000.0f, 0.0f, 0.0f));
+		s_light->SetLightColor(Vec3(1.0f, 0.0f, 0.0f));
+		s_light->SetLightIntensity(400000.0f);
 		s_light->SetPosition(Vec3(-1500.0f, 0.0f, 1500.0f));
 		s_light->SetAttenuationRadius(3000.0f);
 		s_light->SetRotation(0.0f, math::ToRadian(-45.0f), 0.0f);
@@ -230,7 +241,8 @@ namespace event_test
 		SpawnActor(s_light);
 
 		s_light = CreateSPtr<SpotLight>();
-		s_light->SetLightColor(Vec3(0.0f, 0.0f, 400000.0f));
+		s_light->SetLightColor(Vec3(0.0f, 0.0f, 1.0f));
+		s_light->SetLightIntensity(400000.0f);
 		s_light->SetPosition(Vec3(2000.0f, 0.0f, 2000.0f));
 		s_light->SetAttenuationRadius(3000.0f);
 		s_light->SetRotation(0.0f, math::ToRadian(135.0f), 0.0f);

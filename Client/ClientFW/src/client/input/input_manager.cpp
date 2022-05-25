@@ -16,6 +16,36 @@ namespace client_fw
 
     void InputManager::Update()
     {
+        const auto& window = m_window.lock();
+
+        if (m_is_hide_cursor)
+        {
+            POINT pos;
+            GetCursorPos(&pos);
+            ScreenToClient(window->hWnd, &pos);
+
+            m_mouse_position[ToUnderlying(EMousePosState::kCur)] = IVec2(pos.x, pos.y);
+
+            const IVec2& r_pos = GetRelativeMoustPosition();
+            if (r_pos.x != 0) m_key_states[ToUnderlying(EKeyState::kCur)][ToUnderlying(eKey::kXMove)] = true;
+            if (r_pos.y != 0) m_key_states[ToUnderlying(EKeyState::kCur)][ToUnderlying(eKey::kYMove)] = true;
+
+            pos = window->mid_pos;
+            ClientToScreen(window->hWnd, &pos);
+            SetCursorPos(pos.x, pos.y);
+        }
+        else
+        {
+            POINT pos;
+            GetCursorPos(&pos);
+            ScreenToClient(window->hWnd, &pos);
+
+            m_mouse_position[ToUnderlying(EMousePosState::kCur)] = IVec2(pos.x, pos.y);
+        }
+    }
+
+    void InputManager::UpdateForNextFrame()
+    {
         m_key_states[ToUnderlying(EKeyState::kBefore)] =
             m_key_states[ToUnderlying(EKeyState::kCur)];
 
@@ -24,19 +54,11 @@ namespace client_fw
         m_key_states[ToUnderlying(EKeyState::kCur)][ToUnderlying(eKey::kXMove)] =
             m_key_states[ToUnderlying(EKeyState::kCur)][ToUnderlying(eKey::kYMove)] = false;
 
-        if (m_is_hide_cursor)
+        if (m_is_hide_cursor == false)
         {
-            const auto& window = m_window.lock();
-            POINT pos = window->mid_pos;
-            ClientToScreen(window->hWnd, &pos);
-            SetCursorPos(pos.x, pos.y);
+            m_mouse_position[ToUnderlying(EKeyState::kBefore)] =
+                m_mouse_position[ToUnderlying(EKeyState::kCur)];
         }
-        else
-        {
-            m_mouse_position[ToUnderlying(EMousePosState::kBefore)] =
-                m_mouse_position[ToUnderlying(EMousePosState::kCur)];
-        }
-
     }
 
     bool InputManager::IsKeyHoldDown(UINT key) const
@@ -88,8 +110,10 @@ namespace client_fw
     {
         if (hide)
         {
-            m_mouse_position[ToUnderlying(EMousePosState::kLastShow)] =
-                m_mouse_position[ToUnderlying(EMousePosState::kCur)];
+            POINT last_pos;
+            GetCursorPos(&last_pos);
+            ScreenToClient(m_window.lock()->hWnd, &last_pos);
+            m_mouse_position[ToUnderlying(EMousePosState::kLastShow)] = IVec2(last_pos.x, last_pos.y);
 
             POINT pos = m_window.lock()->mid_pos;
             m_mouse_position[ToUnderlying(EMousePosState::kBefore)] =
@@ -161,7 +185,7 @@ namespace client_fw
         m_key_states[ToUnderlying(EKeyState::kCur)].set(key, pressed);
     }
 
-    void InputManager::ChangeMouseState(int button, WPARAM wParam, int x, int y)
+    void InputManager::ChangeMouseKeyState(int button, WPARAM wParam, int x, int y)
     {
         bool down = false;
         HWND hWnd = m_window.lock()->hWnd;
@@ -199,21 +223,34 @@ namespace client_fw
             key = eKey::kMButton;
             down = false;
             break;
-        case WM_MOUSEMOVE:
-            if (m_mouse_position[ToUnderlying(EMousePosState::kCur)].x != x)
-            {
-                m_mouse_position[ToUnderlying(EMousePosState::kCur)].x = x;
-                m_key_states[ToUnderlying(EKeyState::kCur)][ToUnderlying(eKey::kXMove)] = true;
-            }
-            if (m_mouse_position[ToUnderlying(EMousePosState::kCur)].y != y)
-            {
-                m_mouse_position[ToUnderlying(EMousePosState::kCur)].y = y;
-                m_key_states[ToUnderlying(EKeyState::kCur)][ToUnderlying(eKey::kYMove)] = true;
-            }
-            return;
         }
 
         m_key_states[ToUnderlying(EKeyState::kCur)][ToUnderlying(key)] = down;
+    }
+
+    void InputManager::ChangeMouseMoveState(int button, WPARAM wParam, int x, int y)
+    {
+        HWND hWnd = m_window.lock()->hWnd;
+
+        switch (button)
+        {
+        case WM_MOUSEMOVE:
+        {
+            TRACKMOUSEEVENT tme;
+            tme.cbSize = sizeof(tme);
+            tme.hwndTrack = hWnd;
+            tme.dwFlags = TME_LEAVE | TME_HOVER;
+            tme.dwHoverTime = 1;
+            TrackMouseEvent(&tme);
+            break;
+        }
+        case WM_MOUSEHOVER:
+            m_is_track_window = true;
+            break;
+        case WM_MOUSELEAVE:
+            m_is_track_window = false;
+            break;
+        }
     }
 
     void InputManager::ChangeIMEText(WPARAM wParam, LPARAM lParam)
