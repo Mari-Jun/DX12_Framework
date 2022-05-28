@@ -4,6 +4,7 @@
 #include "object/level/rotating_cube_level.h"
 #include "object/level/import_obj_mesh_level.h"
 #include "object/level/dynamic_lod_level.h"
+#include "object/level/instancing_level.h"
 
 #include "object/layer/imgui_demo_layer.h"
 #include "object/layer/docking_layer.h"
@@ -93,9 +94,13 @@ namespace simulation
 			m_select_level_layer->RegisterLevel<ImportObjMeshLevel>("Rendering/Basic", { u8"Obj mesh 파일을 Import 할 수 있습니다." });
 			m_select_level_layer->RegisterLevel<DynamicLODLevel>("Rendering/Basic", { 
 				u8"Static mesh의 Level Of Detail을 확인 할 수 있습니다.",
-				u8"LOD는 최대 3까지(0~3) 지원합니다.",
-				u8"LOD1 : 80%%, LOD2 : 50%%, LOD3 : 25%% 비율을 가집니다.",
+				u8"LOD는 최대 4까지(0~4) 지원합니다.",
+				u8"LOD1 : 80%%, LOD2 : 50%%, LOD3 : 25%%, LOD4 : 10%%의 비율을 가집니다.",
 				u8"카메라가 여러개라면 LOD값 출력이 제대로 동작하지 않습니다. (각 카메라에 대한 LOD는 잘 동작함)"
+				});
+			m_select_level_layer->RegisterLevel<InstancingLevel>("Rendering/Basic", { 
+				u8"Hardware instancing을 사용해서 그리는 장면을 확인할 수 있습니다.",
+				u8"초기 Actor의 수를 설정할 수 있습니다. (최소 1개 ~ 최대 125,000개)"
 				});
 		}
 

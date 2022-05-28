@@ -67,7 +67,7 @@ namespace client_fw
 		const std::vector<SPtr<Material>> GetMaterials(UINT lod) const { return m_materials.at(lod); }
 	};
 
-	class TextureLightVertex;
+	class TextureLightNormalMapVertex;
 	class KDTree;
 
 	class StaticMesh : public Mesh
@@ -84,44 +84,10 @@ namespace client_fw
 		SPtr<KDTree> m_bounding_tree;
 
 	public:
-		TextureLightVertex* GetVertices(UINT lod) const { return m_vertex_infos.at(lod)->GetVertices<TextureLightVertex>(); }
-		UINT GetVertexCount(UINT lod) const { return m_vertex_infos.at(lod)->GetVertexCount<TextureLightVertex>(); }
+		TextureLightNormalMapVertex* GetVertices(UINT lod) const { return m_vertex_infos.at(lod)->GetVertices<TextureLightNormalMapVertex>(); }
+		UINT GetVertexCount(UINT lod) const { return m_vertex_infos.at(lod)->GetVertexCount<TextureLightNormalMapVertex>(); }
 		const SPtr<KDTree>& GetBoundingTree() const { return m_bounding_tree; }
 		void SetBoundingTree(SPtr<KDTree>&& tree) { m_bounding_tree = std::move(tree); }
 	
-	};
-
-	struct BoneData
-	{
-		std::vector<std::string> bone_names;
-		std::vector<Mat4> bone_offsets; 
-		std::vector<IVec4> bone_indices; //BoneVertex
-		std::vector<Vec4> bone_weights; //BoneVertex
-		std::vector<BOrientedBox> oriented_boxes;
-	};
-
-	class SkeletalMesh : public Mesh
-	{
-	public:
-		SkeletalMesh() = default;
-		virtual ~SkeletalMesh() = default;
-
-		virtual bool Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list) override;
-		virtual void PreDraw(ID3D12GraphicsCommandList* command_list) const override;
-		virtual void Draw(ID3D12GraphicsCommandList* command_list, UINT num_of_draw_data, UINT lod) const override;
-		virtual void DrawForShadow(ID3D12GraphicsCommandList* command_list, UINT num_of_draw_data, UINT lod) const override;
-
-	private:
-		SPtr<Skeleton> m_skeleton;
-		SPtr<BoneData> m_bone_data;
-
-	public:
-		const SPtr<Skeleton>& GetSkeleton() { return m_skeleton; }
-		void SetSkeleton(SPtr<Skeleton>& skeleton) { m_skeleton = skeleton; }
-
-		const SPtr<BoneData>& GetBoneData() { return m_bone_data; }
-		void SetBoneData(const SPtr<BoneData>& bone_data) { m_bone_data = bone_data; }
-	
-		UINT GetBoneCount() { return static_cast<UINT>(m_bone_data->bone_names.size()); }
 	};
 }

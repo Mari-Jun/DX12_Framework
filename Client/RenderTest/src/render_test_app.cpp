@@ -21,10 +21,12 @@ namespace render_test
 		{
 			bool result = Application::Initialize();
 			
-			RegisterPressedEvent("Clip Cursor", std::vector{ EventKeyInfo{eKey::kF3, {eAdditionalKey::kControl}} },
-				[]()->bool {Input::SetClipCursor(!Input::IsClipCursor()); return true;  });
-			RegisterPressedEvent("Hide Cursor", std::vector{ EventKeyInfo{eKey::kF2, {eAdditionalKey::kControl}} },
-				[]()->bool {Input::SetHideCursor(!Input::IsHideCursor()); return true;  });
+			RegisterPressedEvent("Input Mode Game Only", std::vector{ EventKeyInfo{eKey::k1, {eAdditionalKey::kControl}} },
+				[]()->bool { Input::SetInputMode(eInputMode::kGameOnly); return true;  });
+			RegisterPressedEvent("Input Mode Game And UI", std::vector{ EventKeyInfo{eKey::k2, {eAdditionalKey::kControl}} },
+				[]()->bool { Input::SetInputMode(eInputMode::kUIAndGame); return true;  });
+			RegisterPressedEvent("Input Mode UI Only", std::vector{ EventKeyInfo{eKey::k3, {eAdditionalKey::kControl}} },
+				[]()->bool { Input::SetInputMode(eInputMode::kUIOnly); return true;  });
 
 			RegisterPressedEvent("open render rect level", { {eKey::k1} },
 				[this]()->bool {OpenLevel(CreateSPtr<RenderRectLevel>());  return true; });

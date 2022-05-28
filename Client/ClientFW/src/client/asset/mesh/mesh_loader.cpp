@@ -51,7 +51,7 @@ namespace client_fw
 		UINT lod = 0;
 		SPtr<StaticMesh> mesh = CreateSPtr<StaticMesh>();
 
-		while (lod < 4)
+		while (lod < 5)
 		{
 			std::vector<Vec3> positions;
 			std::vector<Vec3> normals;

@@ -32,14 +32,16 @@ namespace client_fw
 			float size = GetMaxExtent() / distance;
 
 			UINT lod = 0;
-			if (size > 0.275f)
+			if (size > 0.55f)
 				lod = 0;
-			else if (size <= 0.275f && size > 0.0875f)
+			else if (size <= 0.55f && size > 0.175f)
 				lod = 1;
-			else if (size <= 0.0875f && size > 0.0175f)
+			else if (size <= 0.175f && size > 0.045f)
 				lod = 2;
-			else
+			else if (size <= 0.045f && size > 0.0175f)
 				lod = 3;
+			else
+				lod = 4;
 			SetLevelOfDetail(lod);
 		}
 		else
@@ -56,14 +58,17 @@ namespace client_fw
 			float size = GetMaxExtent() / distance;
 
 			UINT lod = 0;
-			if (size > 0.275f)
+			if (size > 0.55f)
 				lod = 0;
-			else if (size <= 0.275f && size > 0.0875f)
+			else if (size <= 0.55f && size > 0.175f)
 				lod = 1;
-			else if (size <= 0.0875f && size > 0.0175f)
+			else if (size <= 0.175f && size > 0.045f)
 				lod = 2;
-			else
+			else if (size <= 0.045f && size > 0.0175f)
 				lod = 3;
+			else
+				lod = 4;
+			SetLevelOfDetail(lod);
 
 			m_level_of_detail = min(lod, m_mesh->GetLODCount() - 1);
 		}
@@ -83,10 +88,7 @@ namespace client_fw
 		if (m_mesh != nullptr)
 		{
 			m_oriented_box->Transform(m_mesh->GetOrientedBox(), GetWorldMatrix());
-			Vec3 extents = m_oriented_box->GetExtents();
-			m_max_extent = extents.x;
-			m_max_extent = max(m_max_extent, extents.y);
-			m_max_extent = max(m_max_extent, extents.z);
+			m_max_extent = vec3::Length(m_oriented_box->GetExtents());
 		}
 	}
 
