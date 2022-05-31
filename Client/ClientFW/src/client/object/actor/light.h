@@ -33,6 +33,8 @@ namespace client_fw
 		SPtr<Comp> m_light_component;
 
 	public:
+		const SPtr<Comp>& GetLightComponent() const { return m_light_component; }
+
 		const Vec3& GetLightColor() const
 		{
 			return m_light_component->GetLightColor();

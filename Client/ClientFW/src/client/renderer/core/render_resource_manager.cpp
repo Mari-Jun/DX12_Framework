@@ -417,7 +417,7 @@ namespace client_fw
 		CD3DX12_CPU_DESCRIPTOR_HANDLE cpu_handle(m_texture_desciptor_heap->GetCPUDescriptorHandleForHeapStart());
 		cpu_handle.Offset(m_num_of_render_array_texture_data, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
 		CD3DX12_GPU_DESCRIPTOR_HANDLE gpu_handle(m_texture_desciptor_heap->GetGPUDescriptorHandleForHeapStart());
-		gpu_handle.Offset(m_num_of_render_cube_map_texture_data, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
+		gpu_handle.Offset(m_num_of_render_array_texture_data, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
 
 		for (const auto& texture : m_ready_shadow_array_textures)
 		{
