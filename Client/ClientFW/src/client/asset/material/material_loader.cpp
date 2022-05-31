@@ -93,6 +93,7 @@ namespace client_fw
 					break;
 				}
 				case HashCode("map_Bump"):
+				case HashCode("map_bump"):
 				{
 					if (is_new_mtl)
 					{

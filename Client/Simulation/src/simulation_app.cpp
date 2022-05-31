@@ -5,6 +5,7 @@
 #include "object/level/import_obj_mesh_level.h"
 #include "object/level/dynamic_lod_level.h"
 #include "object/level/instancing_level.h"
+#include "object/level/normal_map_level.h"
 
 #include "object/layer/imgui_demo_layer.h"
 #include "object/layer/docking_layer.h"
@@ -101,6 +102,9 @@ namespace simulation
 			m_select_level_layer->RegisterLevel<InstancingLevel>("Rendering/Basic", { 
 				u8"Hardware instancing을 사용해서 그리는 장면을 확인할 수 있습니다.",
 				u8"초기 Actor의 수를 설정할 수 있습니다. (최소 1개 ~ 최대 125,000개)"
+				});
+			m_select_level_layer->RegisterLevel<NormalMapLevel>("Rendering/Basic", {
+			u8"Normal map을 사용한 mesh와 사용하지 않은 mesh를 비교합니다.",
 				});
 		}
 
