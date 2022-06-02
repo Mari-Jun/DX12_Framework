@@ -3,8 +3,8 @@
 #include <client/object/actor/light.h>
 #include <client/object/component/mesh/static_mesh_component.h>
 
-#include "object/level/import_obj_mesh_level.h"
-#include "object/levelsetting/import_obj_mesh_level_node_manager.h"
+#include "object/level/rendering/basic/import_obj_mesh_level.h"
+#include "object/levelsetting/rendering/basic/import_obj_mesh_level_node_manager.h"
 
 namespace simulation
 {

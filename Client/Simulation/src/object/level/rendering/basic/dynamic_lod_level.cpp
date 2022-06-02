@@ -3,8 +3,8 @@
 #include <client/object/actor/light.h>
 #include <client/object/component/mesh/static_mesh_component.h>
 
-#include "object/level/dynamic_lod_level.h"
-#include "object/levelsetting/dynamic_lod_level_node_manager.h"
+#include "object/level/rendering/basic/dynamic_lod_level.h"
+#include "object/levelsetting/rendering/basic/dynamic_lod_level_node_manager.h"
 
 namespace simulation
 {

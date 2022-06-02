@@ -5,8 +5,8 @@
 
 #include "object/actor/rotating_cube.h"
 
-#include "object/level/rotating_cube_level.h"
-#include "object/levelsetting/rotating_cube_level_node_manager.h"
+#include "object/level/rendering/test/rotating_cube_level.h"
+#include "object/levelsetting/rendering/test/rotating_cube_level_node_manager.h"
 
 namespace simulation
 {

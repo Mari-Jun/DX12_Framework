@@ -4,19 +4,20 @@
 #include <client/object/actor/static_mesh_actor.h>
 #include <client/object/component/mesh/static_mesh_component.h>
 #include <client/asset/mesh/mesh.h>
+#include <client/util/file_dialog.h>
 
-#include "object/level/dynamic_lod_level.h"
-#include "object/levelsetting/dynamic_lod_level_node_manager.h"
+#include "object/level/rendering/basic/import_obj_mesh_level.h"
+#include "object/levelsetting/rendering/basic/import_obj_mesh_level_node_manager.h"
 
 namespace simulation
 {
-	DynamicLODLevelInitNodeManager::DynamicLODLevelInitNodeManager()
+	ImportObjMeshLevelInitNodeManager::ImportObjMeshLevelInitNodeManager()
 	{
 	}
 
-	DynamicLODLevelRuntimeNodeManager::DynamicLODLevelRuntimeNodeManager()
+	ImportObjMeshLevelRuntimeNodeManager::ImportObjMeshLevelRuntimeNodeManager()
 	{
-		static auto TransformFunc = [](const SPtr<DynamicLODLevel>& level)
+		static auto TransformFunc = [](const SPtr<ImportObjMeshLevel>& level)
 		{
 			const auto& static_mesh_actor = level->GetStaticMeshActor();
 
@@ -43,25 +44,34 @@ namespace simulation
 			}
 		};
 
-		static auto LODFunc = [](const SPtr<DynamicLODLevel>& level)
+		static auto StaticMeshPathFunc = [](const SPtr<ImportObjMeshLevel>& level)
 		{
-			const auto& static_mesh_comp = level->GetStaticMeshActor()->GetStaticMeshComponent();
-			if (static_mesh_comp != nullptr && static_mesh_comp->GetMesh() != nullptr)
+			std::string path;
+			if (level->GetStaticMeshActor() != nullptr)
 			{
-				ImGui::PushFont(ImGuiHelper::s_jua_20);
-				UINT lod = static_mesh_comp->GetLevelOfDetail();
-				const auto& mesh = static_mesh_comp->GetStaticMesh();
-				UINT vertex_count = mesh->GetVertexCount(lod);
+				const auto& static_mesh_comp = level->GetStaticMeshActor()->GetStaticMeshComponent();
+				if (static_mesh_comp != nullptr && static_mesh_comp->GetMesh() != nullptr)
+				{
+					path = static_mesh_comp->GetMesh()->GetPath();
+				}
+			}
 
-				ImGui::BulletText("current lod : %d", lod);
-				ImGui::BulletText("current vertex count : %d", vertex_count);
-				ImGui::PopFont();
+			ImGui::BulletText(path.c_str());
+
+			if (ImGui::Button("Open file dialog"))
+			{
+				path = FileDialog::OpenFile(L"obj file\0*.obj");
+				if (path.empty() == false)
+				{
+
+					level->SetStaticMeshPath(path);
+				}
 			}
 		};
 
 		RegisterSettingHeaderNode("Static mesh actor", {
+			{"set path", StaticMeshPathFunc},
 			{"transform", TransformFunc},
-			{"level of detail", LODFunc},
 			});
 	}
 }

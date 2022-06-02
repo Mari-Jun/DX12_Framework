@@ -2,8 +2,8 @@
 #include <client/object/actor/light.h>
 
 #include "object/actor/camera_actor.h"
-#include "object/level/multi_camera_level.h"
-#include "object/levelsetting/multi_camera_level_node_manager.h"
+#include "object/level/rendering/basic/multi_camera_level.h"
+#include "object/levelsetting/rendering/basic/multi_camera_level_node_manager.h"
 
 namespace simulation
 {

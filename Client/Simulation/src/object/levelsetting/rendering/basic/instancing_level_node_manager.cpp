@@ -1,7 +1,7 @@
 #include <include/client_core.h>
 
-#include "object/level/instancing_level.h"
-#include "object/levelsetting/instancing_level_node_manager.h"
+#include "object/level/rendering/basic/instancing_level.h"
+#include "object/levelsetting/rendering/basic/instancing_level_node_manager.h"
 
 namespace simulation
 {

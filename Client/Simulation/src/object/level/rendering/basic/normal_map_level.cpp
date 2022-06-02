@@ -2,8 +2,8 @@
 #include <client/object/actor/static_mesh_actor.h>
 #include <client/object/actor/light.h>
 
-#include "object/level/normal_map_level.h"
-#include "object/levelsetting/normal_map_level_node_manager.h"
+#include "object/level/rendering/basic/normal_map_level.h"
+#include "object/levelsetting/rendering/basic/normal_map_level_node_manager.h"
 
 namespace simulation
 {

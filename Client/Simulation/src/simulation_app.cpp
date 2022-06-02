@@ -1,12 +1,12 @@
 #include <include/client_fw.h>
 #include <client/core/entry_point.h>
 
-#include "object/level/rotating_cube_level.h"
-#include "object/level/import_obj_mesh_level.h"
-#include "object/level/dynamic_lod_level.h"
-#include "object/level/instancing_level.h"
-#include "object/level/normal_map_level.h"
-#include "object/level/multi_camera_level.h"
+#include "object/level/rendering/test/rotating_cube_level.h"
+#include "object/level/rendering/basic/import_obj_mesh_level.h"
+#include "object/level/rendering/basic/dynamic_lod_level.h"
+#include "object/level/rendering/basic/instancing_level.h"
+#include "object/level/rendering/basic/normal_map_level.h"
+#include "object/level/rendering/basic/multi_camera_level.h"
 
 #include "object/layer/imgui_demo_layer.h"
 #include "object/layer/docking_layer.h"
