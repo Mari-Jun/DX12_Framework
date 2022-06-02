@@ -20,7 +20,13 @@ namespace client_fw
 	void IngameViewport::PreDraw(ID3D12GraphicsCommandList* command_list)
 	{
 		if (m_viewport_texture->GetResource() != nullptr)
+		{
+			D3D12_VIEWPORT view = { 0.f, 0.f, static_cast<float>(m_size.x), static_cast<float>(m_size.y), 0.0f, 1.0f };
+			D3D12_RECT scissor = { 0, 0, static_cast<LONG>(m_size.x), static_cast<LONG>(m_size.y) };
+			command_list->RSSetViewports(1, &view);
+			command_list->RSSetScissorRects(1, &scissor);
 			m_viewport_texture->PreDraw(command_list);
+		}
 	}
 
 	void IngameViewport::PostDraw(ID3D12GraphicsCommandList* command_list)

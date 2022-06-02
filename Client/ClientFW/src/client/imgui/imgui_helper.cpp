@@ -42,6 +42,26 @@ namespace client_fw
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + offset);
 	}
 
+	void ImGuiHelper::ShowInformationSameLine(std::initializer_list<std::string>&& texts)
+	{
+		ImGui::SameLine();
+		ShowInformation(std::move(texts));
+	}
+
+	void ImGuiHelper::ShowInformation(std::initializer_list<std::string>&& texts)
+	{
+		ImGui::TextDisabled("(?)");
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::BeginTooltip();
+			ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+			for (const auto& text : texts)
+				ImGui::TextUnformatted(text.c_str());
+			ImGui::PopTextWrapPos();
+			ImGui::EndTooltip();
+		}
+	}
+
 	void ImGuiHelper::GenerateJuaFonts()
 	{
 		ImGuiIO& io = ImGui::GetIO(); (void)io;

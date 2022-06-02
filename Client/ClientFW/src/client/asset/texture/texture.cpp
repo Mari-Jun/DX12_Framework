@@ -68,8 +68,10 @@ namespace client_fw
 	{
 		m_gbuffer_textures.clear();
 		m_gbuffer_rtv_cpu_handles.clear();
+		m_gbuffer_gpu_address.clear();
 
 		m_num_of_gbuffer_texture = static_cast<UINT>(gbuffer_rtv_formats.size());
+		m_gbuffer_gpu_address.resize(m_num_of_gbuffer_texture);
 
 		if (CreateDescriptorHeaps(device, command_list) == false)
 		{

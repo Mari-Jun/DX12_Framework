@@ -10,6 +10,9 @@ namespace client_fw
 		static ImVec4 GetImGuiWindowBoxSize();
 
 		static void AlignFormWidth(float width, float alignment = 0.5f);
+		
+		static void ShowInformationSameLine(std::initializer_list<std::string>&& texts);
+		static void ShowInformation(std::initializer_list<std::string>&& texts);
 
 		static void GenerateJuaFonts();
 		static ImFont* s_jua_14;

@@ -45,7 +45,7 @@ namespace client_fw
 		eCameraState m_camera_state;
 		eCameraUsage m_camera_usage;
 		eProjectionMode m_projection_mode;
-		IVec2 m_view_size;
+		IVec2 m_view_size = IVec2(100, 100);
 		bool m_is_updated_view_size = true;
 		bool m_require_resize_texture = false;
 		Vec3 m_camera_position;

@@ -86,12 +86,14 @@ namespace client_fw
 		IVec2 m_texture_size;
 		UINT m_num_of_gbuffer_texture;
 		std::vector<ComPtr<ID3D12Resource>> m_gbuffer_textures;
+		std::vector<D3D12_GPU_VIRTUAL_ADDRESS> m_gbuffer_gpu_address;
 		ComPtr<ID3D12DescriptorHeap> m_rtv_descriptor_heap;
 		std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> m_gbuffer_rtv_cpu_handles;
 		std::vector<INT> m_gbuffer_texture_resource_indices;
 		D3D12_CPU_DESCRIPTOR_HANDLE m_rtv_cpu_handle;
 
 		ComPtr<ID3D12Resource> m_dsv_texture;
+		D3D12_GPU_VIRTUAL_ADDRESS m_dsv_gpu_address;
 		ComPtr<ID3D12DescriptorHeap> m_dsv_descriptor_heap;
 		D3D12_CPU_DESCRIPTOR_HANDLE m_dsv_cpu_handle;
 		INT m_dsv_texture_resource_index = -1;
@@ -103,9 +105,13 @@ namespace client_fw
 		ID3D12Resource* GetGBufferTexture(UINT buffer_index) const;
 		INT GetGBufferResourceIndex(UINT buffer_index) const;
 		void SetGBufferResourceIndex(UINT buffer_index, UINT resource_index);
+		D3D12_GPU_VIRTUAL_ADDRESS GetGBufferGPUAddress(UINT buffer_index) const { return m_gbuffer_gpu_address[buffer_index]; }
+		void SetGBufferGPUAddress(UINT buffer_index, D3D12_GPU_VIRTUAL_ADDRESS address) { m_gbuffer_gpu_address[buffer_index] = address; }
 		ID3D12Resource* GetDSVTexture() const { return m_dsv_texture.Get(); }
 		INT GetDSVResourceIndex() const { return m_dsv_texture_resource_index; }
 		void SetDSVResourceIndex(UINT index) { m_dsv_texture_resource_index = index; }
+		D3D12_GPU_VIRTUAL_ADDRESS GetDSVGPUAddress() const { return m_dsv_gpu_address; }
+		void SetDSVGPUAddress(D3D12_GPU_VIRTUAL_ADDRESS address) { m_dsv_gpu_address = address; }
 	};
 
 	class ViewportTexture : public Texture

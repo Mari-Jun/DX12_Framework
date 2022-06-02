@@ -280,8 +280,6 @@ namespace client_fw
 
 		for (const auto& texture : m_ready_render_textures)
 		{
-			LOG_INFO("Create render texture [{0}]", texture->GetTextureSize());
-
 			//GBuffer의 Format이 달라지게 된다면 변경이 필요하다.
 			texture->Initialize(device, command_list,
 				{ DXGI_FORMAT_R8G8B8A8_UNORM,  DXGI_FORMAT_R11G11B10_FLOAT, DXGI_FORMAT_R8G8B8A8_UNORM });
@@ -292,6 +290,9 @@ namespace client_fw
 				{
 					cpu_handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(m_texture_desciptor_heap->GetCPUDescriptorHandleForHeapStart());
 					cpu_handle.Offset(texture->GetGBufferResourceIndex(i), D3DUtil::s_cbvsrvuav_descirptor_increment_size);
+					gpu_handle = CD3DX12_GPU_DESCRIPTOR_HANDLE(m_texture_desciptor_heap->GetGPUDescriptorHandleForHeapStart());
+					gpu_handle.Offset(texture->GetGBufferResourceIndex(i), D3DUtil::s_cbvsrvuav_descirptor_increment_size);
+					texture->SetGBufferGPUAddress(i, gpu_handle.ptr);
 				}
 
 				device->CreateShaderResourceView(texture->GetGBufferTexture(i),
@@ -300,7 +301,7 @@ namespace client_fw
 				if (texture->GetGBufferResourceIndex(i) < 0)
 				{
 					texture->SetGBufferResourceIndex(i, m_num_of_render_texture_data++);
-					texture->SetGPUAddress(gpu_handle.ptr);
+					texture->SetGBufferGPUAddress(i, gpu_handle.ptr);
 					cpu_handle.Offset(1, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
 					gpu_handle.Offset(1, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
 				}
@@ -335,7 +336,7 @@ namespace client_fw
 			if (texture->GetDSVResourceIndex() < 0)
 			{
 				texture->SetDSVResourceIndex(m_num_of_render_texture_data++);
-				texture->SetGPUAddress(gpu_handle.ptr);
+				texture->SetDSVGPUAddress(gpu_handle.ptr);
 				cpu_handle.Offset(1, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
 				gpu_handle.Offset(1, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
 			}
@@ -354,8 +355,6 @@ namespace client_fw
 		if (m_ready_viewport_textures != nullptr)
 		{
 			const auto& texture = m_ready_viewport_textures;
-
-			LOG_INFO("Create viewport texture [{0}]", texture->GetTextureSize());
 
 			texture->Initialize(device, command_list);
 
