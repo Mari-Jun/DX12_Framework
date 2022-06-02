@@ -12,25 +12,17 @@ namespace simulation
 {
 	RotatingCubeLevelInitNodeManager::RotatingCubeLevelInitNodeManager()
 	{
-		static auto TransformFunc = [](const SPtr<RotatingCubeLevel>& level)
+		static auto TransformFunc = [this](const SPtr<RotatingCubeLevel>& level)
 		{
-			static Vec3 pos = Vec3(0.f, 0.f, 500.f);
-			ImGui::DragFloat3("Position", (float*)&pos, 0.5f, -FLT_MAX, FLT_MAX, "%.4f");
-			level->SetInitPos(pos);
-
-			static Vec3 scale = Vec3(1.f, 1.f, 1.f);
-			ImGui::DragFloat3("Scale", (float*)&scale, 0.05f, 0.0f, FLT_MAX, "%.2f");
-			level->SetInitScale(scale);
+			ImGui::DragFloat3("Position", (float*)&m_init_pos, 0.5f, -FLT_MAX, FLT_MAX, "%.4f");
+			ImGui::DragFloat3("Scale", (float*)&m_init_scale, 0.05f, 0.0f, FLT_MAX, "%.2f");
 		};
 
 		RegisterSettingHeaderNode("Rotating Cube", { { "transform", TransformFunc } });
 
-		static auto ShadowFunc = [](const SPtr<RotatingCubeLevel>& level)
+		static auto ShadowFunc = [this](const SPtr<RotatingCubeLevel>& level)
 		{
-			static bool enable_shadow = false;
-
-			ImGui::Checkbox("enable shadow", &enable_shadow);
-			level->EnableDirectionalLightShadow(enable_shadow);
+			ImGui::Checkbox("enable shadow", &m_enable_dir_light_shadow);
 		};
 
 		RegisterSettingHeaderNode("Directional Light", { { "shadow", ShadowFunc } });

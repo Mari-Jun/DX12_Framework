@@ -7,18 +7,11 @@ namespace simulation
 {
 	InstancingLevelInitNodeManager::InstancingLevelInitNodeManager()
 	{
-		static auto SpawnFunc = [](const SPtr<InstancingLevel>& level)
+		static auto SpawnFunc = [this](const SPtr<InstancingLevel>& level)
 		{
-			static UINT num_of_x_actors = 10;
-			static UINT num_of_y_actors = 10;
-			static UINT num_of_z_actors = 10;
-
-			if (ImGui::DragInt("num of x", (int*)&num_of_x_actors, 1.0f, 1, 50, "%d", ImGuiSliderFlags_AlwaysClamp))
-				level->SetNumOfXActors(num_of_x_actors);
-			if (ImGui::DragInt("num of y", (int*)&num_of_y_actors, 1.0f, 1, 50, "%d", ImGuiSliderFlags_AlwaysClamp))
-				level->SetNumOfYActors(num_of_y_actors);
-			if (ImGui::DragInt("num of z", (int*)&num_of_z_actors, 1.0f, 1, 50, "%d", ImGuiSliderFlags_AlwaysClamp))
-				level->SetNumOfZActors(num_of_z_actors);
+			ImGui::DragInt("num of x", (int*)&m_num_of_x_actors, 1.0f, 1, 50, "%d", ImGuiSliderFlags_AlwaysClamp);
+			ImGui::DragInt("num of y", (int*)&m_num_of_y_actors, 1.0f, 1, 50, "%d", ImGuiSliderFlags_AlwaysClamp);
+			ImGui::DragInt("num of z", (int*)&m_num_of_z_actors, 1.0f, 1, 50, "%d", ImGuiSliderFlags_AlwaysClamp);
 		};
 
 		RegisterSettingHeaderNode("Spawn Actor", { {"num of actors", SpawnFunc} });

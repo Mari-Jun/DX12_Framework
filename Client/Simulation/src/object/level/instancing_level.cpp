@@ -27,18 +27,23 @@ namespace simulation
 	{
 		bool ret = SimulationLevel::Initialize();
 
-		float start_x = static_cast<float>(m_num_of_x_actors - 1) * -0.5f * m_offset;
-		float start_y = static_cast<float>(m_num_of_y_actors - 1) * -0.5f * m_offset;
-		float start_z = static_cast<float>(m_num_of_z_actors - 1) * -0.5f * m_offset;
-		for (UINT x = 0; x < m_num_of_x_actors; ++x)
+		float offset = s_init_node_manager->GetOffset();
+		UINT num_of_x = s_init_node_manager->GetNumOfXActors();
+		UINT num_of_y = s_init_node_manager->GetNumOfYActors();
+		UINT num_of_z = s_init_node_manager->GetNumOfZActors();
+
+		float start_x = static_cast<float>(num_of_x - 1) * -0.5f * offset;
+		float start_y = static_cast<float>(num_of_y - 1) * -0.5f * offset;
+		float start_z = static_cast<float>(num_of_z - 1) * -0.5f * offset;
+		for (UINT x = 0; x < num_of_x; ++x)
 		{
-			float new_x = start_x + x * m_offset;
-			for (UINT z = 0; z < m_num_of_x_actors; ++z)
+			float new_x = start_x + x * offset;
+			for (UINT z = 0; z < num_of_z; ++z)
 			{
-				float new_z = start_z + z * m_offset;
-				for (UINT y = 0; y < m_num_of_y_actors; ++y)
+				float new_z = start_z + z * offset;
+				for (UINT y = 0; y < num_of_y; ++y)
 				{
-					float new_y = start_y + y * m_offset;
+					float new_y = start_y + y * offset;
 
 					auto static_mesh_actor = CreateSPtr<StaticMeshActor>(eMobilityState::kStatic, "Contents/Meshes/deathstar/death_star.obj");
 					static_mesh_actor->SetPosition(Vec3(new_x, new_y, new_z));
@@ -84,10 +89,16 @@ namespace simulation
 	{
 		s_runtime_node_manager->ExecuteLevelSettingNodes();
 	}
+
 	std::vector<SPtr<VisualOctree>> InstancingLevel::CreateVisualOctrees() const
 	{
-		float max_width = std::max(m_offset * m_num_of_x_actors, m_offset * m_num_of_y_actors);
-		max_width = std::max(max_width, m_offset * m_num_of_z_actors);
+		float offset = s_init_node_manager->GetOffset();
+		UINT num_of_x = s_init_node_manager->GetNumOfXActors();
+		UINT num_of_y = s_init_node_manager->GetNumOfYActors();
+		UINT num_of_z = s_init_node_manager->GetNumOfZActors();
+
+		float max_width = std::max(offset * num_of_x, offset * num_of_y);
+		max_width = std::max(max_width, offset * num_of_z);
 		max_width = std::max(10000.f, max_width);
 
 		std::vector<SPtr<VisualOctree>> visual_octrees;

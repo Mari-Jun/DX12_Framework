@@ -29,12 +29,12 @@ namespace simulation
 		bool ret = SimulationLevel::Initialize();
 
 		SpawnActor(m_rotating_cube);
-		m_rotating_cube->SetPosition(m_init_pos);
-		m_rotating_cube->SetScale(m_init_scale);
+		m_rotating_cube->SetPosition(m_init_node_manager->GetInitPos());
+		m_rotating_cube->SetScale(m_init_node_manager->GetInitScale());
 
 		m_directional_light->SetLightColor(Vec3(1.0f, 1.0f, 1.0f));
 		m_directional_light->SetRotation(math::ToRadian(45.0f), 0.0f, 0.0f);
-		if(m_enable_dir_light_shadow == false)
+		if(m_init_node_manager->EnableDirLightShadow() == false)
 			m_directional_light->DisableShadow();
 		SpawnActor(m_directional_light);
 

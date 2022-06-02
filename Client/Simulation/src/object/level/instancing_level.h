@@ -38,15 +38,6 @@ namespace simulation
 	private:
 		static UPtr<InstancingLevelInitNodeManager> s_init_node_manager;
 		static UPtr<InstancingLevelRuntimeNodeManager> s_runtime_node_manager;
-		UINT m_num_of_x_actors = 10;
-		UINT m_num_of_y_actors = 10;
-		UINT m_num_of_z_actors = 10;
-		float m_offset = 500.f;
-
-	public:
-		void SetNumOfXActors(UINT num) { m_num_of_x_actors = num; }
-		void SetNumOfYActors(UINT num) { m_num_of_y_actors = num; }
-		void SetNumOfZActors(UINT num) { m_num_of_z_actors = num; }
     };
 };
 
