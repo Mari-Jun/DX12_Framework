@@ -37,9 +37,6 @@ namespace client_fw
 		void SpawnActor(const SPtr<Actor>& actor) const;
 		void RegisterUILayer(const SPtr<UserInterfaceLayer>& ui_layer) const;
 
-	private:
-		virtual UPtr<GameMode> CreateGameMode() const;
-
 	protected:
 		void RegisterPressedEvent(const std::string& name, std::vector<EventKeyInfo>&& keys,
 			const std::function<bool()>& func, bool consumption = true);
@@ -59,11 +56,13 @@ namespace client_fw
 		std::string m_name;
 		eLevelState m_level_state;
 
+		// 기본 값인 GameMode가 아닌 상속 값을 사용하려면 그 Level의 생성자에서 새롭게 만들어주세요.
+		UPtr<GameMode> m_game_mode;
+
 	private:
 		std::vector<std::string> m_registered_input_events;
 		UPtr<ActorManager> m_actor_manager;
 		bool m_is_runtime_level;
-		UPtr<GameMode> m_game_mode;
 
 	public:
 		const std::string& GetName() const { return m_name; }

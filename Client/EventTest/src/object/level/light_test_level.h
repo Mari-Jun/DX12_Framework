@@ -16,9 +16,6 @@ namespace event_test
 
         virtual void Update(float delta_time) override;
 
-    private:
-        virtual UPtr<GameMode> CreateGameMode() const override;
-
     public:
         virtual std::vector<SPtr<VisualOctree>> CreateVisualOctrees() const override;
     };

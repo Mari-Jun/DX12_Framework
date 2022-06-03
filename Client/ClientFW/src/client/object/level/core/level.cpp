@@ -16,6 +16,7 @@ namespace client_fw
 		: m_name(name), m_level_state(eLevelState::kInGame)
 		, m_is_runtime_level(false)
 	{
+		m_game_mode = CreateUPtr<GameMode>();
 		m_actor_manager = CreateUPtr<ActorManager>();
 	}
 
@@ -25,7 +26,7 @@ namespace client_fw
 
 	bool Level::InitializeLevel()
 	{
-		m_game_mode = CreateGameMode();
+		
 		bool ret = m_game_mode->Initialize(shared_from_this());
 		ret &= Initialize();
 		return ret;
@@ -83,11 +84,6 @@ namespace client_fw
 		UserInterfaceManager::GetUIManager().RegisterUserInterfaceLayer(ui_layer);
 	}
 
-	UPtr<GameMode> Level::CreateGameMode() const
-	{
-		return CreateUPtr<GameMode>();
-	}
-	
 	void Level::RegisterPressedEvent(const std::string& name, std::vector<EventKeyInfo>&& keys,
 		const std::function<bool()>& func, bool consumption)
 	{

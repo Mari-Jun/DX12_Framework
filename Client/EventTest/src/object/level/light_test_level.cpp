@@ -20,6 +20,7 @@ namespace event_test
 	LightTestLevel::LightTestLevel()
 		: Level("light test level")
 	{
+		m_game_mode = CreateUPtr<ThirdGameMode>();
 	}
 
 	bool LightTestLevel::Initialize()
@@ -283,11 +284,6 @@ namespace event_test
 
 	void LightTestLevel::Update(float delta_time)
 	{
-	}
-
-	UPtr<GameMode> LightTestLevel::CreateGameMode() const
-	{
-		return CreateUPtr<ThirdGameMode>();
 	}
 
 	std::vector<SPtr<VisualOctree>> LightTestLevel::CreateVisualOctrees() const
