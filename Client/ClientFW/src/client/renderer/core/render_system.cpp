@@ -319,6 +319,7 @@ namespace client_fw
 				size = m_ready_ingame_viewport->GetViewportSize();
 			m_render_camera_manager->UpdateMainCameraViewport(size.x, size.y);
 		}
+		SetWaitGpuComplete(true);
 	}
 
 	void RenderSystem::UnregisterGraphicsShader(const std::string& shader_name, std::vector<eRenderLevelType>&& level_types)

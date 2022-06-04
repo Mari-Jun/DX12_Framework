@@ -12,7 +12,17 @@ namespace client_fw
 	}
 
 	void Pawn::Update(float delta_time)
-	{		
+	{
+	}
+
+	void Pawn::Possess(const SPtr<Controller>& controller)
+	{
+		controller->Possess(std::static_pointer_cast<Pawn>(shared_from_this()));
+	}
+
+	void Pawn::Possess(const SPtr<PlayerController>& controller)
+	{
+		controller->Possess(std::static_pointer_cast<Pawn>(shared_from_this()));
 	}
 
 	void Pawn::RegisterPressedEvent(const std::string& name, std::vector<EventKeyInfo>&& keys, 

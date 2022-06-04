@@ -28,6 +28,25 @@ namespace simulation
     public:
         void SetCameraActor(const WPtr<CameraActor>& owner) { m_owner = owner; }
     };
+
+    class CameraPawn;
+
+    class CameraPawnUILayer : public UserInterfaceLayer
+    {
+    public:
+        CameraPawnUILayer();
+        virtual ~CameraPawnUILayer() = default;
+
+        virtual bool Initialize() override;
+        virtual void Update(float delta_time) override;
+
+    private:
+        SPtr<TextUI> m_text;
+        WPtr<CameraPawn> m_owner;
+
+    public:
+        void SetCameraPawn(const WPtr<CameraPawn>& owner) { m_owner = owner; }
+    };
 }
 
 

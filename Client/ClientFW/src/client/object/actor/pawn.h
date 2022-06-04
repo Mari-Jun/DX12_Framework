@@ -5,6 +5,7 @@
 namespace client_fw
 {
 	class Controller;
+	class PlayerController;
 
 	class Pawn : public Actor
 	{
@@ -15,6 +16,9 @@ namespace client_fw
 		virtual void Update(float delta_time) override;
 
 		virtual void AddMovementInput(const Vec3& direction, float scale) {}
+
+		virtual void Possess(const SPtr<Controller>& controller);
+		virtual void Possess(const SPtr<PlayerController>& controller);
 
 	protected:
 		virtual void RegisterPressedEvent(const std::string& name, std::vector<EventKeyInfo>&& keys,

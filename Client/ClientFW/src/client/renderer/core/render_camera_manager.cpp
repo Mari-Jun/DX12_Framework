@@ -91,7 +91,10 @@ namespace client_fw
 			{
 				if (camera == m_ready_main_camera)
 				{
+					if(m_main_camera != nullptr)
+						m_main_camera->SetPaused();
 					m_main_camera = m_ready_main_camera;
+					m_main_camera->SetActive();
 					m_ready_main_camera = nullptr;
 				}
 				m_render_cameras.push_back(camera);

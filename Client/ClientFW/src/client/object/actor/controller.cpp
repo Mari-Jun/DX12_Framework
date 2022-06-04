@@ -161,7 +161,11 @@ namespace client_fw
 	{
 		m_controlled_pawn = pawn;
 		pawn->SetController(std::static_pointer_cast<Controller>(shared_from_this()));
-		SetRotation(m_controlled_pawn->GetRotation());
+
+		Vec3 rot = quat::QuaternionToEuler(m_controlled_pawn->GetRotation());
+		m_pitch = rot.x;
+		m_yaw = rot.y;
+		m_roll = rot.z;
 	}
 
 	void Controller::UnPossess()

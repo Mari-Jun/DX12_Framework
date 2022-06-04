@@ -9,6 +9,8 @@
 #include "object/level/rendering/basic/multi_camera_level.h"
 #include "object/level/rendering/basic/gbuffer_level.h"
 
+#include "object/level/component/player/possess_pawn_level.h"
+
 #include "object/layer/imgui_demo_layer.h"
 #include "object/layer/docking_layer.h"
 #include "object/layer/viewport_layer.h"
@@ -114,6 +116,11 @@ namespace simulation
 				});
 			m_select_level_layer->RegisterLevel<GBufferLevel>("Rendering/Basic", {
 				u8"Deferred shading에 사용되는 GBuffer를 확인할 수 있습니다.",
+				});
+
+			m_select_level_layer->RegisterLevel<PossessPawnLevel>("Component/Player", {
+				u8"Camera pawn에 Possess 할 수 있습니다.",
+				u8"각 Camera의 local tranform을 설정 할 수 있습니다.",
 				});
 		}
 

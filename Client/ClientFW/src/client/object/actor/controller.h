@@ -36,8 +36,9 @@ namespace client_fw
         void SetMaxRoll(float roll) { m_max_roll = roll; }
 
     public:
-       virtual void Possess(const SPtr<Pawn>& pawn);
-       virtual void UnPossess();
+        const SPtr<Pawn>& GetControlledPawn() const { return m_controlled_pawn; }
+        virtual void Possess(const SPtr<Pawn>& pawn);
+        virtual void UnPossess();
     };
 }
 

@@ -135,7 +135,6 @@ namespace client_fw
 		if (cur_level != nullptr &&
 			cur_level->GetGameMode()->GetPlayerController() == shared_from_this())
 		{
-			camera_comp->SetActive();
 			camera_comp->SetOwnerController(shared_from_this());
 			camera_comp->SetMainCamera();
 		}
