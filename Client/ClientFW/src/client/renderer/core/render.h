@@ -19,7 +19,8 @@ namespace client_fw
 	enum class eRenderLevelType
 	{
 		kOpaque, kShadow, kShadowCube, kShadowCascade,
-		kDeferred, kTransparent, kUI, kFinalView
+		kDeferred, kTransparent, kUI, kFinalView,
+		kPostProcess,
 	};
 
 	enum class eShaderType

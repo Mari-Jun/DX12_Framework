@@ -28,8 +28,7 @@ namespace client_fw
 
 		void Draw(ID3D12GraphicsCommandList* command_list, 
 			std::function<void(ID3D12GraphicsCommandList*)>&& before_deferred_function,
-			std::function<void(ID3D12GraphicsCommandList*)>&& deferred_function,
-			std::function<void(ID3D12GraphicsCommandList*)>&& after_deferred_function);
+			std::function<void(ID3D12GraphicsCommandList*)>&& deferred_function);
 
 		void DrawMainCameraForUI(ID3D12GraphicsCommandList* command_list);
 
