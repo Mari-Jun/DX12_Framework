@@ -68,10 +68,10 @@ namespace client_fw
 	{
 		m_gbuffer_textures.clear();
 		m_gbuffer_rtv_cpu_handles.clear();
-		m_gbuffer_gpu_address.clear();
+		m_gbuffer_gpu_handle.clear();
 
 		m_num_of_gbuffer_texture = static_cast<UINT>(gbuffer_rtv_formats.size());
-		m_gbuffer_gpu_address.resize(m_num_of_gbuffer_texture);
+		m_gbuffer_gpu_handle.resize(m_num_of_gbuffer_texture);
 
 		if (CreateDescriptorHeaps(device, command_list) == false)
 		{
@@ -322,6 +322,33 @@ namespace client_fw
 	{
 		command_list->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
 			m_texture_resource.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_GENERIC_READ));
+	}
+
+	RWTexture::RWTexture(const IVec2& size)
+		: Texture(eTextureType::kRW)
+		, m_texture_size(size)
+	{
+	}
+
+	RWTexture::~RWTexture()
+	{
+	}
+	
+	bool RWTexture::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
+	{
+		m_texture_resource = TextureCreator::Create2DTexture(device, DXGI_FORMAT_R8G8B8A8_UNORM, m_texture_size, 1, 1,
+			D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COMMON, nullptr);
+		D3DUtil::SetObjectName(m_texture_resource.Get(), "rw texture");
+
+		return true;
+	}
+
+	void RWTexture::PreDraw(ID3D12GraphicsCommandList* command_list)
+	{
+	}
+
+	void RWTexture::PostDraw(ID3D12GraphicsCommandList* command_list)
+	{
 	}
 
 	ShadowTexture::ShadowTexture(eTextureType type, const IVec2& size)

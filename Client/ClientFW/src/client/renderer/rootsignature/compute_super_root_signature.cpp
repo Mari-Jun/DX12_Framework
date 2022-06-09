@@ -23,9 +23,13 @@ namespace client_fw
 
 	bool ComputeSuperRootSignature::CreateRootSignature(ID3D12Device* device)
 	{
-		std::array<CD3DX12_DESCRIPTOR_RANGE, 0> descriptor_range;
+		std::array<CD3DX12_DESCRIPTOR_RANGE, 2> descriptor_range;
+		descriptor_range[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0);
+		descriptor_range[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0);
 
-		std::array<CD3DX12_ROOT_PARAMETER, 0> root_parameters;
+		std::array<CD3DX12_ROOT_PARAMETER, 2> root_parameters;
+		root_parameters[0].InitAsDescriptorTable(1, &descriptor_range[0]);
+		root_parameters[1].InitAsDescriptorTable(1, &descriptor_range[1]);
 
 		std::array<CD3DX12_STATIC_SAMPLER_DESC, 0> static_samplers;
 

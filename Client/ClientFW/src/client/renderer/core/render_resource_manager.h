@@ -29,6 +29,7 @@ namespace client_fw
 	class Shadow2DTexture;
 	class ShadowArrayTexture;
 	class ShadowCubeTexture;
+	class RWTexture;
 	class RenderTextTexture;
 	enum class eTextureType;
 
@@ -59,6 +60,7 @@ namespace client_fw
 		void UpdateExternalCubeMapTextureResource(ID3D12Device* device, ID3D12GraphicsCommandList* command_list);
 		void UpdateRenderTextureResource(ID3D12Device* device, ID3D12GraphicsCommandList* command_list);
 		void UpdateViewportTextureResource(ID3D12Device* device, ID3D12GraphicsCommandList* command_list);
+		void UpdateRWTextureResource(ID3D12Device* device, ID3D12GraphicsCommandList* command_list);
 		void UpdateShadowTextureResource(ID3D12Device* device, ID3D12GraphicsCommandList* command_list);
 		void UpdateShadowCubeTextureResource(ID3D12Device* device, ID3D12GraphicsCommandList* command_list);
 		void UpdateShadowArrayTextureResource(ID3D12Device* device, ID3D12GraphicsCommandList* command_list);
@@ -73,6 +75,7 @@ namespace client_fw
 		std::vector<SPtr<ExternalTexture>> m_ready_external_textures;
 		std::vector<SPtr<RenderTexture>> m_ready_render_textures;
 		SPtr<ViewportTexture> m_ready_viewport_textures;
+		std::vector<SPtr<RWTexture>> m_ready_rw_textures;
 		std::vector<SPtr<Shadow2DTexture>> m_ready_shadow_textures;
 		std::vector<SPtr<ShadowCubeTexture>> m_ready_shadow_cube_textures;
 		std::vector<SPtr<ShadowArrayTexture>> m_ready_shadow_array_textures;

@@ -125,6 +125,11 @@ namespace client_fw
 				m_ready_viewport_textures = std::static_pointer_cast<ViewportTexture>(texture);
 				break;
 			}
+			case eTextureType::kRW:
+			{
+				m_ready_rw_textures.push_back(std::static_pointer_cast<RWTexture>(texture));
+				break;
+			}
 			case eTextureType::kShadow:
 			{
 				m_ready_shadow_textures.push_back(std::static_pointer_cast<Shadow2DTexture>(texture));
@@ -214,6 +219,7 @@ namespace client_fw
 		UpdateExternalTextureResource(device, command_list);
 		UpdateRenderTextureResource(device, command_list);
 		UpdateViewportTextureResource(device, command_list);
+		UpdateRWTextureResource(device, command_list);
 		UpdateShadowTextureResource(device, command_list);
 		UpdateShadowCubeTextureResource(device, command_list);
 		UpdateRenderTextTextureResource(device, command_list);
@@ -236,7 +242,7 @@ namespace client_fw
 				&TextureCreator::GetShaderResourceViewDesc(texture->GetResource()), cpu_handle);
 
 			texture->SetResourceIndex(m_num_of_external_texture_data++);
-			texture->SetGPUAddress(gpu_handle.ptr);
+			texture->SetGPUHandle(gpu_handle);
 			cpu_handle.Offset(1, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
 			gpu_handle.Offset(1, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
 
@@ -261,7 +267,7 @@ namespace client_fw
 				&TextureCreator::GetShaderResourceViewDescForCube(texture->GetResource()), cpu_handle);
 
 			texture->SetResourceIndex(m_num_of_external_cube_map_texture_data++ - START_INDEX_RENDER_CUBE_MAP_TEXTURE);
-			texture->SetGPUAddress(gpu_handle.ptr);
+			texture->SetGPUHandle(gpu_handle);
 			cpu_handle.Offset(1, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
 			gpu_handle.Offset(1, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
 
@@ -292,7 +298,7 @@ namespace client_fw
 					cpu_handle.Offset(texture->GetGBufferResourceIndex(i), D3DUtil::s_cbvsrvuav_descirptor_increment_size);
 					gpu_handle = CD3DX12_GPU_DESCRIPTOR_HANDLE(m_texture_desciptor_heap->GetGPUDescriptorHandleForHeapStart());
 					gpu_handle.Offset(texture->GetGBufferResourceIndex(i), D3DUtil::s_cbvsrvuav_descirptor_increment_size);
-					texture->SetGBufferGPUAddress(i, gpu_handle.ptr);
+					texture->SetGBufferGPUHandle(i, gpu_handle);
 				}
 
 				device->CreateShaderResourceView(texture->GetGBufferTexture(i),
@@ -301,7 +307,7 @@ namespace client_fw
 				if (texture->GetGBufferResourceIndex(i) < 0)
 				{
 					texture->SetGBufferResourceIndex(i, m_num_of_render_texture_data++);
-					texture->SetGBufferGPUAddress(i, gpu_handle.ptr);
+					texture->SetGBufferGPUHandle(i, gpu_handle);
 					cpu_handle.Offset(1, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
 					gpu_handle.Offset(1, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
 				}
@@ -319,7 +325,7 @@ namespace client_fw
 			if (texture->GetResourceIndex() < 0)
 			{
 				texture->SetResourceIndex(m_num_of_render_texture_data++);
-				texture->SetGPUAddress(gpu_handle.ptr);
+				texture->SetGPUHandle(gpu_handle);
 				cpu_handle.Offset(1, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
 				gpu_handle.Offset(1, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
 			}
@@ -336,7 +342,7 @@ namespace client_fw
 			if (texture->GetDSVResourceIndex() < 0)
 			{
 				texture->SetDSVResourceIndex(m_num_of_render_texture_data++);
-				texture->SetDSVGPUAddress(gpu_handle.ptr);
+				texture->SetDSVGPUHandle(gpu_handle);
 				cpu_handle.Offset(1, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
 				gpu_handle.Offset(1, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
 			}
@@ -361,10 +367,50 @@ namespace client_fw
 			device->CreateShaderResourceView(texture->GetResource(),
 				&TextureCreator::GetShaderResourceViewDesc(texture->GetResource()), cpu_handle);
 			texture->SetResourceIndex(START_INDEX_VIEWPORT_TEXTURE);
-			texture->SetGPUAddress(gpu_handle.ptr);
+			texture->SetGPUHandle(gpu_handle);
 
 			m_ready_viewport_textures = nullptr;
 		}
+	}
+
+	void RenderResourceManager::UpdateRWTextureResource(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
+	{
+		CD3DX12_CPU_DESCRIPTOR_HANDLE cpu_handle(m_texture_desciptor_heap->GetCPUDescriptorHandleForHeapStart());
+		cpu_handle.Offset(m_num_of_render_texture_data, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
+		CD3DX12_GPU_DESCRIPTOR_HANDLE gpu_handle(m_texture_desciptor_heap->GetGPUDescriptorHandleForHeapStart());
+		gpu_handle.Offset(m_num_of_render_texture_data, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
+
+		for (const auto& texture : m_ready_rw_textures)
+		{
+			texture->Initialize(device, command_list);
+
+			if (texture->GetResourceIndex() >= 0)
+			{
+				cpu_handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(m_texture_desciptor_heap->GetCPUDescriptorHandleForHeapStart());
+				cpu_handle.Offset(texture->GetResourceIndex(), D3DUtil::s_cbvsrvuav_descirptor_increment_size);
+			}
+
+			device->CreateShaderResourceView(texture->GetResource(),
+				&TextureCreator::GetShaderResourceViewDesc(texture->GetResource()), cpu_handle);
+
+			cpu_handle.Offset(1, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
+			device->CreateUnorderedAccessView(texture->GetResource(), nullptr,
+				&TextureCreator::GetUnorderedAccessViewDesc(texture->GetResource()), cpu_handle);
+
+			cpu_handle.Offset(1, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
+
+			if (texture->GetResourceIndex() < 0)
+			{
+				texture->SetResourceIndex(m_num_of_render_texture_data);
+				texture->SetGPUHandle(gpu_handle);
+				gpu_handle.Offset(1, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
+				texture->SetUAVGPUHandle(gpu_handle);
+				gpu_handle.Offset(1, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
+				m_num_of_render_texture_data += 2;
+			}
+		}
+
+		m_ready_rw_textures.clear();
 	}
 
 	void RenderResourceManager::UpdateShadowTextureResource(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
@@ -381,7 +427,7 @@ namespace client_fw
 			device->CreateShaderResourceView(texture->GetResource(),
 				&TextureCreator::GetShaderResourceViewDescFor32DSV(texture->GetResource()), cpu_handle);
 			texture->SetResourceIndex(m_num_of_render_texture_data++);
-			texture->SetGPUAddress(gpu_handle.ptr);
+			texture->SetGPUHandle(gpu_handle);
 			cpu_handle.Offset(1, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
 			gpu_handle.Offset(1, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
 		}
@@ -403,7 +449,7 @@ namespace client_fw
 			device->CreateShaderResourceView(texture->GetResource(),
 				&TextureCreator::GetShaderResourceViewDescFor32DSVCube(texture->GetResource()), cpu_handle);
 			texture->SetResourceIndex(m_num_of_render_cube_map_texture_data++ - START_INDEX_RENDER_CUBE_MAP_TEXTURE);
-			texture->SetGPUAddress(gpu_handle.ptr);
+			texture->SetGPUHandle(gpu_handle);
 			cpu_handle.Offset(1, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
 			gpu_handle.Offset(1, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
 		}
@@ -425,7 +471,7 @@ namespace client_fw
 			device->CreateShaderResourceView(texture->GetResource(),
 				&TextureCreator::GetShaderResourceViewDescFor32DSVArray(texture->GetResource(), texture->GetArraySize()), cpu_handle);
 			texture->SetResourceIndex(m_num_of_render_array_texture_data++ - START_INDEX_RENDER_ARRAY_TEXTURE);
-			texture->SetGPUAddress(gpu_handle.ptr);
+			texture->SetGPUHandle(gpu_handle);
 			cpu_handle.Offset(1, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
 			gpu_handle.Offset(1, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
 		}
@@ -446,7 +492,7 @@ namespace client_fw
 				&TextureCreator::GetShaderResourceViewDesc(texture->GetResource()), cpu_handle);
 
 			texture->SetResourceIndex(m_num_of_render_text_texture_data++);
-			texture->SetGPUAddress(gpu_handle.ptr);
+			texture->SetGPUHandle(gpu_handle);
 			cpu_handle.Offset(1, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
 			gpu_handle.Offset(1, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
 		}

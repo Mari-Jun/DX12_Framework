@@ -108,11 +108,20 @@ namespace client_fw
 			{
 				IVec2 size = camera->GetViewSize();
 
-				if(camera->GetRenderTexture() == nullptr)
+				if (camera->GetRenderTexture() == nullptr)
+				{
 					camera->SetRenderTexture(CreateSPtr<RenderTexture>(size));
+				}
 				else
+				{
 					camera->GetRenderTexture()->SetTextureSize(size);
+					for (const auto& [name, rw_texture] : camera->GetRWTextures())
+						rw_texture->SetTextureSize(size);
+				}
+
 				RenderResourceManager::GetRenderResourceManager().RegisterTexture(camera->GetRenderTexture());
+				for (const auto& [name, rw_texture] : camera->GetRWTextures())
+					RenderResourceManager::GetRenderResourceManager().RegisterTexture(rw_texture);
 				camera->SetRequireResizeTexture(false);
 
 				m_wait_resource_render_cameras.push_back(camera);

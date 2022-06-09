@@ -4,6 +4,7 @@
 namespace client_fw
 {
 	class RenderTexture;
+	class RWTexture;
 
 	class RenderCameraComponent : public CameraComponent
 	{
@@ -29,12 +30,19 @@ namespace client_fw
 
 	private:
 		SPtr<RenderTexture> m_render_texture;
+		std::map<std::string, SPtr<RWTexture>> m_rw_textures;
 
 	public:
 		const SPtr<RenderTexture>& GetRenderTexture() const { return m_render_texture; }
 		// 카메라가 생성되면 카메라가 보는 장면을 그릴 Texture가 필요한데, 그 Texture를 뜻한다. 
 		// 사용자가 직접적으로 호출할 필요는 없다.
 		void SetRenderTexture(const SPtr<RenderTexture>& texture) { m_render_texture = texture; }
+		
+		const std::map<std::string, SPtr<RWTexture>>& GetRWTextures() const { return m_rw_textures; }
+		const SPtr<RWTexture>& GetRWTexture(const std::string& name) const { return m_rw_textures.at(name); }
+		// 계산 셰이더 등에서 사용되는 RW Texture입니다.
+		// 사용자가 직접적으로 Set함수를 Shader에서 호출하면 됩니다.
+		void SetRWTexture(const std::string& name, const SPtr<RWTexture>& texture) { m_rw_textures[name] = texture; }
 
 	protected:
 		SPtr<RenderCameraComponent> SharedFromThis();

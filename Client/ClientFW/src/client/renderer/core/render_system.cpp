@@ -143,7 +143,6 @@ namespace client_fw
 
 	void RenderSystem::Shutdown()
 	{
-		m_compute_super_root_signature->Shutdown();
 		for (const auto& [type, render_level] : m_compute_render_levels)
 			render_level->Shutdown();
 		for (const auto& [name, shader] : m_compute_shaders)
@@ -152,6 +151,7 @@ namespace client_fw
 			render_level->Shutdown();
 		for (const auto& [name, shader] : m_graphics_shaders)
 			shader->Shutdown();
+		m_compute_super_root_signature->Shutdown();
 		m_graphics_super_root_signature->Shutdown();
 		m_imgui_system->Shutdown();
 		m_render_asset_manager->Shutdown();

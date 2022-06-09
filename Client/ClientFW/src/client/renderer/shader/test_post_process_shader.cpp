@@ -3,6 +3,7 @@
 #include "client/renderer/shader/test_post_process_shader.h"
 #include "client/renderer/renderlevel/core/render_level.h"
 #include "client/object/component/util/render_camera_component.h"
+#include "client/asset/texture/texture.h"
 
 namespace client_fw
 {
@@ -21,11 +22,39 @@ namespace client_fw
 
 	void TestPostProcessShader::Draw(ID3D12GraphicsCommandList* command_list, eRenderLevelType level_type) const
 	{
-		LOG_TRACE(m_render_cameras.size());
 		for (const auto& camera : m_render_cameras)
 		{
-			if(camera->GetCameraState() == eCameraState::kActive)
-				LOG_INFO(camera->GetName());
+			if (camera->GetCameraState() == eCameraState::kActive)
+			{
+				const auto& render_texture = camera->GetRenderTexture();
+				const auto& rw_texture = camera->GetRWTexture("test post process");
+				if (rw_texture->GetResource() != nullptr)
+				{
+					command_list->SetPipelineState(m_pipeline_states.at(level_type)[0].Get());
+
+					command_list->SetComputeRootDescriptorTable(0, render_texture->GetGPUHandle());
+					command_list->SetComputeRootDescriptorTable(1, rw_texture->GetUAVGPUHandle());				
+
+					command_list->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(rw_texture->GetResource(),
+						D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_UNORDERED_ACCESS));
+
+					UINT num_group_x = static_cast<UINT>(rw_texture->GetTextureSize().x / 32 + 1);
+					command_list->Dispatch(num_group_x, rw_texture->GetTextureSize().y, 1);
+
+					command_list->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(render_texture->GetResource(),
+						D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_STATE_COPY_DEST));
+					command_list->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(rw_texture->GetResource(),
+						D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COPY_SOURCE));
+
+					command_list->CopyResource(render_texture->GetResource(), rw_texture->GetResource());
+
+					command_list->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(render_texture->GetResource(),
+						D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_GENERIC_READ));
+					command_list->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(rw_texture->GetResource(),
+						D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_COMMON));
+				}
+
+			}
 		}
 	}
 
@@ -58,6 +87,7 @@ namespace client_fw
 		if (render_camera != nullptr)
 		{
 			m_render_cameras.push_back(render_camera);
+			render_camera->SetRWTexture("test post process", CreateSPtr<RWTexture>(render_camera->GetViewSize()));
 			return true;
 		}
 		return false;

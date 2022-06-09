@@ -291,4 +291,16 @@ namespace client_fw
 
 		return view_desc;
 	}
+
+	D3D12_UNORDERED_ACCESS_VIEW_DESC TextureCreator::GetUnorderedAccessViewDesc(const ComPtr<ID3D12Resource>& texture_resource)
+	{
+		D3D12_UNORDERED_ACCESS_VIEW_DESC view_desc = {};
+		D3D12_RESOURCE_DESC resource_desc = texture_resource->GetDesc();
+
+		view_desc.Format = resource_desc.Format;
+		view_desc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
+		view_desc.Texture2D.MipSlice = 0;
+
+		return view_desc;
+	}
 }
