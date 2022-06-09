@@ -324,9 +324,8 @@ namespace client_fw
 			m_texture_resource.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_GENERIC_READ));
 	}
 
-	RWTexture::RWTexture(const IVec2& size)
+	RWTexture::RWTexture()
 		: Texture(eTextureType::kRW)
-		, m_texture_size(size)
 	{
 	}
 

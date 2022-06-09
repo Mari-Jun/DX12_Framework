@@ -87,7 +87,7 @@ namespace client_fw
 		if (render_camera != nullptr)
 		{
 			m_render_cameras.push_back(render_camera);
-			render_camera->SetRWTexture("test post process", CreateSPtr<RWTexture>(render_camera->GetViewSize()));
+			render_camera->SetRWTexture("test post process", CreateSPtr<RWTexture>());
 			return true;
 		}
 		return false;

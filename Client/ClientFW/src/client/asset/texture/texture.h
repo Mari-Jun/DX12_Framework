@@ -143,7 +143,7 @@ namespace client_fw
 	class RWTexture : public Texture
 	{
 	public:
-		RWTexture(const IVec2& size);
+		RWTexture();
 		virtual ~RWTexture();
 
 		virtual bool Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list) override;
