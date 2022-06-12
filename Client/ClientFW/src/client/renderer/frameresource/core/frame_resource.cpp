@@ -9,6 +9,7 @@
 #include "client/renderer/frameresource/billboard_frame_resource.h"
 #include "client/renderer/frameresource/widget_frame_resource.h"
 #include "client/renderer/frameresource/ui_frame_resource.h"
+#include "client/renderer/frameresource/render_camera_post_processing_frame_resource.h"
 #include "client/renderer/core/render.h"
 
 namespace client_fw
@@ -52,6 +53,8 @@ namespace client_fw
 
 	void FrameResource::Shutdown()
 	{
+		for (const auto& [shader_name, frame_resource] : m_render_camera_post_processing_frame_resource)
+			frame_resource->Shutdown();
 		for (const auto& [shader_name, frame_resource] : m_local_light_frame_resource)
 			frame_resource->Shutdown();
 		for (const auto& [shader_name, frame_resource] : m_ui_frame_resource)
@@ -119,6 +122,13 @@ namespace client_fw
 		ResourceOwner owner{ shader_name, level_type };
 		m_ui_frame_resource.emplace(owner, CreateUPtr<UserInterfaceFrameResource>());
 		m_ui_frame_resource[owner]->Initialize(device);
+	}
+
+	void FrameResource::CreateRenderCameraPostProcessingFrameResource(ID3D12Device* device, const std::string& shader_name, eRenderLevelType level_type)
+	{
+		ResourceOwner owner{ shader_name, level_type };
+		m_render_camera_post_processing_frame_resource.emplace(owner, CreateUPtr<RenderCameraPostProcessingFrameResource>());
+		m_render_camera_post_processing_frame_resource[owner]->Initialize(device);
 	}
 
 }

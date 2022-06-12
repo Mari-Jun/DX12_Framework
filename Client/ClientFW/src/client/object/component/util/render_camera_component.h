@@ -3,6 +3,14 @@
 
 namespace client_fw
 {
+	struct RenderCameraPostProcessingInfo
+	{
+		bool use_post_processing = true;
+		bool use_blur = false;
+		float blur_sigma = 2.5f;
+		int blur_count = 4;
+	};
+
 	class RenderTexture;
 	class RWTexture;
 
@@ -43,6 +51,12 @@ namespace client_fw
 		// 계산 셰이더 등에서 사용되는 RW Texture입니다.
 		// 사용자가 직접적으로 Set함수를 Shader에서 호출하면 됩니다.
 		void SetRWTexture(const std::string& name, const SPtr<RWTexture>& texture) { m_rw_textures[name] = texture; }
+
+	protected:
+		UPtr<RenderCameraPostProcessingInfo> m_post_processing_info;
+
+	public:
+		const UPtr<RenderCameraPostProcessingInfo>& GetPostProcessingInfo() const { return m_post_processing_info; }
 
 	protected:
 		SPtr<RenderCameraComponent> SharedFromThis();

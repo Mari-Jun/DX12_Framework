@@ -23,6 +23,7 @@
 #include "client/renderer/shader/sky_shader.h"
 #include "client/renderer/shader/light_shader.h"
 #include "client/renderer/shader/test_post_process_shader.h"
+#include "client/renderer/shader/render_camera_post_processing_shader.h"
 
 #include "client/renderer/core/render_resource_manager.h"
 #include "client/renderer/core/render_camera_manager.h"
@@ -132,8 +133,8 @@ namespace client_fw
 		ret &= RegisterGraphicsShader<UIShader>("ui", { eRenderLevelType::kUI });
 
 		ret &= RegisterComputeRenderLevel<PostProcessRenderLevel>(eRenderLevelType::kPostProcess);
-		ret &= RegisterComputeShader<TestPostProcessShader>("test post process", { eRenderLevelType::kPostProcess });
-
+		//ret &= RegisterComputeShader<TestPostProcessShader>("test post process", { eRenderLevelType::kPostProcess });
+		ret &= RegisterComputeShader<RenderCameraPostProcessingShader>("render camera post processing", { eRenderLevelType::kPostProcess });
 
 		ret &= m_imgui_system->Initialize(device, m_window.lock()->hWnd);
 		ret &= m_render_asset_manager->Initialize(device);
@@ -176,7 +177,6 @@ namespace client_fw
 			[this](ID3D12Device* device) {
 				m_graphics_render_levels.at(eRenderLevelType::kOpaque)->Update(device);
 				m_graphics_render_levels.at(eRenderLevelType::kDeferred)->Update(device);
-				m_compute_render_levels.at(eRenderLevelType::kPostProcess)->Update(device);
 			});
 
 		m_light_manager->Update(device);
@@ -197,6 +197,8 @@ namespace client_fw
 			m_graphics_render_levels.at(eRenderLevelType::kFinalView)->Update(device);
 		}
 		m_graphics_render_levels.at(eRenderLevelType::kUI)->Update(device);
+
+		m_compute_render_levels.at(eRenderLevelType::kPostProcess)->Update(device);
 
 		for (const auto& [level_type, render_level] : m_graphics_render_levels)
 			render_level->UpdateFrameResource(device);
@@ -274,11 +276,7 @@ namespace client_fw
 				m_graphics_render_levels.at(eRenderLevelType::kDeferred)->Draw(command_list);
 			});
 
-		const auto& main_camera = m_render_camera_manager->GetMainCamera();
-		if (main_camera != nullptr)
-		{
-			m_compute_render_levels.at(eRenderLevelType::kPostProcess)->Draw(command_list);
-		}
+		m_compute_render_levels.at(eRenderLevelType::kPostProcess)->Draw(command_list);
 
 #ifdef __USE_RENDER_DRAW_CPU_TIME__
 		l_end = clock();

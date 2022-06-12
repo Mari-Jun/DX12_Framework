@@ -60,7 +60,7 @@ namespace client_fw
 
 	D3D12_SHADER_BYTECODE TestPostProcessShader::CreateComputeShader(ID3DBlob** shader_blob, eRenderLevelType level_type, int pso_index) const
 	{
-		return CompileShader(L"../ClientFW/src/client/renderer/hlsl/PostProcess.hlsl", "CS", "cs_5_1", shader_blob);
+		return CompileShader(L"../ClientFW/src/client/renderer/hlsl/RenderCameraPostProcessing.hlsl", "CS", "cs_5_1", shader_blob);
 	}
 
 	bool TestPostProcessShader::CreatePipelineStates(ID3D12Device* device, const SPtr<ComputeRenderLevel>& render_level)

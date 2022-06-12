@@ -9,6 +9,7 @@ namespace client_fw
 	RenderCameraComponent::RenderCameraComponent(const std::string& name)
 		: CameraComponent(eCameraUsage::kBasic, name)
 	{
+		m_post_processing_info = CreateUPtr<RenderCameraPostProcessingInfo>();
 	}
 
 	void RenderCameraComponent::UpdateViewMatrix()

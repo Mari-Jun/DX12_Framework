@@ -14,6 +14,8 @@ namespace client_fw
 	class WidgetFrameResource;
 	class UserInterfaceFrameResource;
 
+	class RenderCameraPostProcessingFrameResource;
+
 	enum class eRenderLevelType;
 
 	struct ResourceOwner
@@ -65,6 +67,8 @@ namespace client_fw
 		std::map<ResourceOwner, UPtr<LocalLightFrameResource>> m_local_light_frame_resource;
 		std::map<ResourceOwner, UPtr<UserInterfaceFrameResource>> m_ui_frame_resource;
 
+		std::map<ResourceOwner, UPtr<RenderCameraPostProcessingFrameResource>> m_render_camera_post_processing_frame_resource;
+
 	public:
 		void CreateSkyFrameResource(ID3D12Device* device, const std::string& shader_name, eRenderLevelType level_type);
 		void CreateStaticMeshFrameResource(ID3D12Device* device, const std::string& shader_name, eRenderLevelType level_type);
@@ -73,6 +77,7 @@ namespace client_fw
 		void CreateWidgetFrameResource(ID3D12Device* device, const std::string& shader_name, eRenderLevelType level_type);
 		void CreateLocalLightFrameResource(ID3D12Device* device, const std::string& shader_name, eRenderLevelType level_type);
 		void CreateUserInterfaceFrameResource(ID3D12Device* device, const std::string& shader_name, eRenderLevelType level_type);
+		void CreateRenderCameraPostProcessingFrameResource(ID3D12Device* device, const std::string& shader_name, eRenderLevelType level_type);
 
 		const UPtr<SkyFrameResource>& GetSkyFrameResource(const std::string& shader_name, eRenderLevelType level_type) const
 		{
@@ -107,6 +112,11 @@ namespace client_fw
 		const UPtr<UserInterfaceFrameResource>& GetUserInterfaceFrameResource(const std::string& shader_name, eRenderLevelType level_type) const
 		{
 			return m_ui_frame_resource.at({ shader_name, level_type });
+		}
+
+		const UPtr<RenderCameraPostProcessingFrameResource>& GetRenderCameraPostProcessingFrameResource(const std::string& shader_name, eRenderLevelType level_type) const
+		{
+			return m_render_camera_post_processing_frame_resource.at({ shader_name, level_type });
 		}
 	};
 }
