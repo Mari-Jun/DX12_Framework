@@ -8,7 +8,7 @@ namespace simulation
     class CameraGameMode : public GameMode
     {
     public:
-        CameraGameMode();
+        CameraGameMode(bool use_controller_event = true);
         virtual ~CameraGameMode() = default;
     };
 }

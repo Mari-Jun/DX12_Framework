@@ -324,8 +324,9 @@ namespace client_fw
 			m_texture_resource.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_GENERIC_READ));
 	}
 
-	RWTexture::RWTexture()
+	RWTexture::RWTexture(UINT down_scale)
 		: Texture(eTextureType::kRW)
+		, m_down_scale(down_scale)
 	{
 	}
 

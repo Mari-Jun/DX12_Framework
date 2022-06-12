@@ -103,8 +103,9 @@ namespace simulation
 		controller->SetPlayerCamera(m_render_camera_component);
 	}
 
-	CameraPlayerController::CameraPlayerController()
+	CameraPlayerController::CameraPlayerController(bool use_event)
 		: PlayerController("camera player controller")
+		, m_use_event(use_event)
 	{
 	}
 
@@ -112,24 +113,27 @@ namespace simulation
 	{
 		bool ret = PlayerController::Initialize();
 
-		RegisterAxisEvent("move forward", { AxisEventKeyInfo{eKey::kW, 1.0f}, AxisEventKeyInfo{eKey::kS, -1.0f} },
-			[this](float axis)->bool { m_controlled_pawn->AddMovementInput(GetForward(), axis); return true; });
-		RegisterAxisEvent("move right", { AxisEventKeyInfo{eKey::kD, 1.0f}, AxisEventKeyInfo{eKey::kA, -1.0f} },
-			[this](float axis)->bool { m_controlled_pawn->AddMovementInput(GetRight(), axis); return true; });
-		RegisterAxisEvent("move up", { AxisEventKeyInfo{eKey::kE, 1.0f}, AxisEventKeyInfo{eKey::kQ, -1.0f} },
-			[this](float axis)->bool { m_controlled_pawn->AddMovementInput(GetUp(), axis); return true; });
-		RegisterAxisEvent("turn", { AxisEventKeyInfo{eKey::kXMove, 1.0f} },
-			[this](float axis)->bool {
-				IVec2 relative_pos = Input::GetRelativeMousePosition();
-				AddYawInput(axis * relative_pos.x);
-				return true;
-			});
-		RegisterAxisEvent("look up", { AxisEventKeyInfo{eKey::kYMove, 1.0f} },
-			[this](float axis)->bool {
-				IVec2 relative_pos = Input::GetRelativeMousePosition();
-				AddPitchInput(axis * relative_pos.y);
-				return true;
-			});
+		if (m_use_event)
+		{
+			RegisterAxisEvent("move forward", { AxisEventKeyInfo{eKey::kW, 1.0f}, AxisEventKeyInfo{eKey::kS, -1.0f} },
+				[this](float axis)->bool { m_controlled_pawn->AddMovementInput(GetForward(), axis); return true; });
+			RegisterAxisEvent("move right", { AxisEventKeyInfo{eKey::kD, 1.0f}, AxisEventKeyInfo{eKey::kA, -1.0f} },
+				[this](float axis)->bool { m_controlled_pawn->AddMovementInput(GetRight(), axis); return true; });
+			RegisterAxisEvent("move up", { AxisEventKeyInfo{eKey::kE, 1.0f}, AxisEventKeyInfo{eKey::kQ, -1.0f} },
+				[this](float axis)->bool { m_controlled_pawn->AddMovementInput(GetUp(), axis); return true; });
+			RegisterAxisEvent("turn", { AxisEventKeyInfo{eKey::kXMove, 1.0f} },
+				[this](float axis)->bool {
+					IVec2 relative_pos = Input::GetRelativeMousePosition();
+					AddYawInput(axis * relative_pos.x);
+					return true;
+				});
+			RegisterAxisEvent("look up", { AxisEventKeyInfo{eKey::kYMove, 1.0f} },
+				[this](float axis)->bool {
+					IVec2 relative_pos = Input::GetRelativeMousePosition();
+					AddPitchInput(axis * relative_pos.y);
+					return true;
+				});
+		}
 
 		return ret;
 	}

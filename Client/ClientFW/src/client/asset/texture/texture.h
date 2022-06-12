@@ -143,7 +143,7 @@ namespace client_fw
 	class RWTexture : public Texture
 	{
 	public:
-		RWTexture();
+		RWTexture(UINT down_scale = 1);
 		virtual ~RWTexture();
 
 		virtual bool Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list) override;
@@ -151,13 +151,14 @@ namespace client_fw
 		virtual void PostDraw(ID3D12GraphicsCommandList* command_list);
 
 	protected:
+		UINT m_down_scale;
 		IVec2 m_texture_size;
 		INT m_uav_texture_resource_index = -1;
 		CD3DX12_GPU_DESCRIPTOR_HANDLE m_uav_gpu_handle;
 
 	public:
 		const IVec2& GetTextureSize() const { return m_texture_size; }
-		void SetTextureSize(const IVec2& size) { m_texture_size = size; }
+		void SetTextureSize(const IVec2& size) { m_texture_size = size * m_down_scale; }
 		INT GetUAVResourceIndex() const { return m_uav_texture_resource_index; }
 		void SetUAVResourceIndex(INT index) { m_uav_texture_resource_index = index; }
 		CD3DX12_GPU_DESCRIPTOR_HANDLE GetUAVGPUHandle() const { return m_uav_gpu_handle; }

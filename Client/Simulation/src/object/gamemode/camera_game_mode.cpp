@@ -5,9 +5,9 @@
 
 namespace simulation
 {
-	CameraGameMode::CameraGameMode()
+	CameraGameMode::CameraGameMode(bool use_controller_event)
 	{
-		m_player_controller = CreateSPtr<CameraPlayerController>();
+		m_player_controller = CreateSPtr<CameraPlayerController>(use_controller_event);
 		m_default_pawn = CreateSPtr<CameraPawn>();
 	}
 }

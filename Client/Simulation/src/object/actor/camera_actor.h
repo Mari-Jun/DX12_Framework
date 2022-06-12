@@ -69,11 +69,14 @@ namespace simulation
     class CameraPlayerController : public PlayerController
     {
     public:
-        CameraPlayerController();
+        CameraPlayerController(bool use_event = true);
         virtual ~CameraPlayerController() = default;
 
         virtual bool Initialize() override;
         virtual void Shutdown() override;
+
+    private:
+        bool m_use_event;
     };
 }
 
