@@ -10,7 +10,7 @@ namespace client_fw
 		kRenderUI, kViewport, kRW
 	};
 
-	class Texture
+	class Texture : public Asset
 	{
 	public:
 		Texture(eTextureType type);
@@ -36,7 +36,7 @@ namespace client_fw
 		void SetGPUHandle(CD3DX12_GPU_DESCRIPTOR_HANDLE handle) { m_gpu_handle = handle; }
 	};
 
-	class ExternalTexture final: public Asset, public Texture
+	class ExternalTexture final : public Texture
 	{
 	public:
 		ExternalTexture();
@@ -48,7 +48,7 @@ namespace client_fw
 		ComPtr<ID3D12Resource> m_upload_heap;
 	};
 
-	class ExternalCubeMapTexture final : public Asset, public Texture
+	class ExternalCubeMapTexture final : public Texture
 	{
 	public:
 		ExternalCubeMapTexture();

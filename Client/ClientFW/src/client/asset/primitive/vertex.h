@@ -116,19 +116,22 @@ namespace client_fw
 	public:
 		BillboardVertex();
 		BillboardVertex(const Vec3& position, const Vec2& size,
-			UINT index, const Vec2& coordinate);
+			UINT index, const Vec2& offset, const Vec2& tilling);
 
 		const Vec2& GetSize() const { return m_size; }
 		void SetSize(const Vec2& size) { m_size = size; }
 		UINT GetResourceIndex() const { return m_resource_index; }
 		void SetResourceIndex(UINT index) { m_resource_index = index; }
-		const Vec2& GetCoordinate() const { return m_coordinate; }
-		void SetCoordinate(const Vec2& coord) { m_coordinate = coord; }
+		const Vec2& GetOffset() const { return m_offset; }
+		void SetOffset(const Vec2& offset) { m_offset = offset; }
+		const Vec2& GetTilling() const { return m_tilling; }
+		void SetTilling(const Vec2& tilling) { m_tilling = tilling; }
 
 	protected:
 		Vec2 m_size;
 		UINT m_resource_index;
-		Vec2 m_coordinate;
+		Vec2 m_offset;
+		Vec2 m_tilling;
 	};
 
 	class WidgetVertex : public Vertex

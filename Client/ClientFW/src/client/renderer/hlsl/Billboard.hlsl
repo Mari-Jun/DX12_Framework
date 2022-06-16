@@ -39,7 +39,8 @@ struct VS_BILLBOARD_INPUT
     float3 position : POSITION;
     float2 size : SIZE;
     uint resource_index : RSINDEX;
-    float2 coordinate : TEXCOORD;
+    float2 offset : OFFSET;
+    float2 tilling : TILLING;
 };
 
 struct GS_BILLBOARD_OUTPUT
@@ -72,7 +73,7 @@ void GSBillboard(point VS_BILLBOARD_INPUT input[1], inout TriangleStream<GS_BILL
     for (int i = 0; i < 4; ++i)
     {
         output.sv_position = mul(vertices[i], g_view_projection);
-        output.uv = s_billboard_uvs[i] + input[0].coordinate;
+        output.uv = s_billboard_uvs[i] * input[0].tilling + input[0].offset;
         
         out_stream.Append(output);
     }
@@ -95,7 +96,7 @@ void GSFixUpBillboard(point VS_BILLBOARD_INPUT input[1], inout TriangleStream<GS
     for (int i = 0; i < 4; ++i)
     {
         output.sv_position = mul(vertices[i], g_view_projection);
-        output.uv = s_billboard_uvs[i] + input[0].coordinate;
+        output.uv = s_billboard_uvs[i] * input[0].tilling + input[0].offset;
         
         out_stream.Append(output);
     }

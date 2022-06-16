@@ -7,7 +7,7 @@
 namespace client_fw
 {
 	Texture::Texture(eTextureType type)
-		: m_texture_type(type)
+		: Asset(), m_texture_type(type)
 	{
 	}
 
@@ -16,7 +16,7 @@ namespace client_fw
 	}
 
 	ExternalTexture::ExternalTexture()
-		: Asset(), Texture(eTextureType::kExternal)
+		: Texture(eTextureType::kExternal)
 	{
 	}
 
@@ -35,7 +35,7 @@ namespace client_fw
 	}
 
 	ExternalCubeMapTexture::ExternalCubeMapTexture()
-		: Asset(), Texture(eTextureType::kExternalCubeMap)
+		: Texture(eTextureType::kExternalCubeMap)
 	{
 	}
 

@@ -67,12 +67,13 @@ namespace client_fw
 
 	std::vector<D3D12_INPUT_ELEMENT_DESC> TextureBillboardShader::CreateInputLayout(eRenderLevelType level_type, int pso_index) const
 	{
-		std::vector<D3D12_INPUT_ELEMENT_DESC> input_element_descs(4);
+		std::vector<D3D12_INPUT_ELEMENT_DESC> input_element_descs(5);
 
 		input_element_descs[0] = { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
 		input_element_descs[1] = { "SIZE", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
 		input_element_descs[2] = { "RSINDEX", 0, DXGI_FORMAT_R32_UINT, 0, 20, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
-		input_element_descs[3] = { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+		input_element_descs[3] = { "OFFSET", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+		input_element_descs[4] = { "TILLING", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 32, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
 
 		return input_element_descs;
 	}

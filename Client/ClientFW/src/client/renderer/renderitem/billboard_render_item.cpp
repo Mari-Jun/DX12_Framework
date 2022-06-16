@@ -51,7 +51,7 @@ namespace client_fw
 			{
 				BillboardVertex vertex(BillboardVertex(bb_comp->GetWorldPosition(),
 					bb_comp->GetSize(), bb_comp->GetTexture()->GetResourceIndex(),
-					bb_comp->GetCoordinate()));
+					bb_comp->GetOffset(), bb_comp->GetTilling()));
 
 				if (bb_comp->IsFixUpVector())
 					fix_up_vertices.emplace_back(std::move(vertex));
@@ -173,7 +173,7 @@ namespace client_fw
 			{
 				BillboardVertex vertex(BillboardVertex(bb_comp->GetWorldPosition(),
 					bb_comp->GetSize(), bb_comp->GetMaterial()->GetResourceIndex(),
-					Vec2(0.0f, 0.0f)));
+					Vec2(0.0f, 0.0f), Vec2(1.f, 1.f)));
 
 				if (bb_comp->IsFixUpVector())
 					fix_up_vertices.emplace_back(std::move(vertex));

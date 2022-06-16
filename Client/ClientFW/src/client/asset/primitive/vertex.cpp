@@ -80,14 +80,15 @@ namespace client_fw
 
 	BillboardVertex::BillboardVertex()
 		: Vertex(), m_size(Vec2(100.0f, 100.0f))
-		, m_resource_index(0), m_coordinate(vec2::ZERO)
+		, m_resource_index(0), m_offset(vec2::ZERO), m_tilling(1, 1)
 	{
 	}
 
 	BillboardVertex::BillboardVertex(const Vec3& position, const Vec2& size,
-		UINT index, const Vec2& coordinate)
+		UINT index, const Vec2& offset, const Vec2& tilling)
 		: Vertex(position), m_size(size)
-		, m_resource_index(index), m_coordinate(coordinate)
+		, m_resource_index(index), m_offset(offset)
+		, m_tilling(tilling)
 	{
 	}
 

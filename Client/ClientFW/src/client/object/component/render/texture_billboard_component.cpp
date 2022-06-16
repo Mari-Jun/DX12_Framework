@@ -14,10 +14,15 @@ namespace client_fw
 
 	void TextureBillboardComponent::SetTexture(const std::string& path)
 	{
-		const auto& texture = AssetStore::LoadTexture(path);
-		if (texture != nullptr)
-			SetTexture(texture);
+		if (path.empty() == false)
+		{
+			SetTexture(AssetStore::LoadTexture(path));
+			if (m_texture == nullptr)
+				LOG_WARN("Could not find texture : {0}", path);
+		}
 		else
-			LOG_WARN("Could not find texture : {0}", path);
+		{
+			LOG_WARN("file path is empty");
+		}
 	}
 }
