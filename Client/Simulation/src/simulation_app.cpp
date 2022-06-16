@@ -8,6 +8,7 @@
 #include "object/level/rendering/basic/normal_map_level.h"
 #include "object/level/rendering/basic/multi_camera_level.h"
 #include "object/level/rendering/basic/gbuffer_level.h"
+#include "object/level/rendering/basic/billboard_level.h"
 
 #include "object/level/rendering/postprocessing/blur_level.h"
 
@@ -118,6 +119,11 @@ namespace simulation
 				});
 			m_select_level_layer->RegisterLevel<GBufferLevel>("Rendering/Basic", {
 				u8"Deferred shading에 사용되는 GBuffer를 확인할 수 있습니다.",
+				});
+			m_select_level_layer->RegisterLevel<TextureBillboardLevel>("Rendering/Basic", {
+				u8"Texture Billboard Component를 지닌 객체를 확인할 수 있습니다.",
+				u8"Offset과 Tilling기능이 내포되어 있습니다.",
+				u8"Billboard의 크기를 조정할 수 있습니다."
 				});
 
 			m_select_level_layer->RegisterLevel<BlurLevel>("Rendering/PostProcessing",{
