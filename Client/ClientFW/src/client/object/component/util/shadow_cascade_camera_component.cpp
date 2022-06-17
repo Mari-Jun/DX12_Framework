@@ -115,7 +115,10 @@ namespace client_fw
 			}
 
 			BFrustum bf_projection = BFrustum(cascade_projection);
-			bf_projection.Transform(mat4::CreateRotationFromQuaternion(render_camera->GetWorldRotation()) * mat4::CreateTranslation(render_camera->GetWorldPosition()));
+			bf_projection.Transform(
+				mat4::CreateRotationFromDirection(render_camera->GetCameraForward(),
+					render_camera->GetCameraRight(), render_camera->GetCameraUp()) *
+				mat4::CreateTranslation(render_camera->GetCameraPosition()));
 			bf_projection.Transform(m_view_projection_matrix);
 
 			Vec3 max_pos = Vec3(-FLT_MAX, -FLT_MAX, -FLT_MAX);

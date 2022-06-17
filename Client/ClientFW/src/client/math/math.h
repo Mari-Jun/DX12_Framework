@@ -311,6 +311,14 @@ namespace client_fw
 			return ret;
 		}
 
+		inline Mat4 CreateRotationFromDirection(const Vec3& forward, const Vec3& right, const Vec3& up)
+		{
+			Mat4 ret;
+			XMStoreFloat4x4(&ret, XMMatrixSet(right.x, right.y, right.z, 0.0f, up.x, up.y, up.z, 0.0f,
+				forward.x, forward.y, forward.z, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f));
+			return ret;
+		}
+
 		inline Mat4 CreateTranslation(float x, float y, float z)
 		{
 			Mat4 ret;
