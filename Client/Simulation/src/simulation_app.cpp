@@ -125,6 +125,9 @@ namespace simulation
 				u8"Offset과 Tilling기능이 내포되어 있습니다.",
 				u8"Billboard의 크기를 조정할 수 있습니다."
 				});
+			m_select_level_layer->RegisterLevel<TextureBillboardAnimationLevel>("Rendering/Basic", {
+				u8"Texture Billboard Component를 이용하여 스프라이트 애니메이션 실행을 확인할 수 있습니다.",
+				});
 
 			m_select_level_layer->RegisterLevel<BlurLevel>("Rendering/PostProcessing",{
 				u8"Gaussian blur를 사용한 blurring을 확인할 수 있습니다.",

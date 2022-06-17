@@ -20,9 +20,12 @@ namespace simulation
 
 	private:
 		SPtr<TextureBillboardComponent> m_billboard_component;
+		float m_animation_time = 0.0f;
 
 	public:
 		const SPtr<TextureBillboardComponent>& GetTextureBillboardComponent() const { return m_billboard_component; }
+		float GetAnimationTime() const { return m_animation_time; }
+		void SetAnimationTime(float time) { m_animation_time = time; }
 	};
 }
 

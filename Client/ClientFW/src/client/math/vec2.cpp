@@ -121,7 +121,8 @@ namespace client_fw
 
 	Vec2 operator/(float scalar, const Vec2& v)
 	{
-		return v / scalar;
+		Vec2 ret(scalar / v.x, scalar / v.y);
+		return ret;
 	}
 
 	bool operator==(const Vec2& v1, const Vec2& v2)
