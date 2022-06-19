@@ -12,6 +12,7 @@
 #include "object/level/rendering/basic/sky_level.h"
 
 #include "object/level/rendering/postprocessing/blur_level.h"
+#include "object/level/rendering/postprocessing/sobel_edge_level.h"
 
 #include "object/level/component/player/possess_pawn_level.h"
 
@@ -137,6 +138,9 @@ namespace simulation
 			m_select_level_layer->RegisterLevel<BlurLevel>("Rendering/PostProcessing",{
 				u8"Gaussian blur를 사용한 blurring을 확인할 수 있습니다.",
 				u8"Player가 조종하는 Pawn은 움직임 Event를 받지 않습니다. (카메라 회전, 플레이어 이동)"
+				});
+			m_select_level_layer->RegisterLevel<SobelEdgeLevel>("Rendering/PostProcessing", {
+				u8"Sobel Edge를 적용한 렌더링을 확인할 수 있습니다.",
 				});
 
 			m_select_level_layer->RegisterLevel<PossessPawnLevel>("Component/Player", {
