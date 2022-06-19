@@ -22,4 +22,10 @@ namespace client_fw
 	{
 		m_sky_cube_component = nullptr;
 	}
+
+	void SkyCube::SetTexturePath(const std::string& path)
+	{
+		m_texture_path = path;
+		m_sky_cube_component->SetCubeMapTexture(m_texture_path);
+	}
 }

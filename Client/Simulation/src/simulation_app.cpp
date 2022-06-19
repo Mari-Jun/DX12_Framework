@@ -9,6 +9,7 @@
 #include "object/level/rendering/basic/multi_camera_level.h"
 #include "object/level/rendering/basic/gbuffer_level.h"
 #include "object/level/rendering/basic/billboard_level.h"
+#include "object/level/rendering/basic/sky_level.h"
 
 #include "object/level/rendering/postprocessing/blur_level.h"
 
@@ -127,6 +128,10 @@ namespace simulation
 				});
 			m_select_level_layer->RegisterLevel<TextureBillboardAnimationLevel>("Rendering/Basic", {
 				u8"Texture Billboard Component를 이용하여 스프라이트 애니메이션 실행을 확인할 수 있습니다.",
+				});
+			m_select_level_layer->RegisterLevel<SkyCubeLevel>("Rendering/Basic", {
+				u8"Sky Cube Texture를 설정할 수 있습니다.",
+				u8"Cube map texture가 아닌 texture를 불러오게 되면 프로그램이 강제 종료 됩니다."
 				});
 
 			m_select_level_layer->RegisterLevel<BlurLevel>("Rendering/PostProcessing",{

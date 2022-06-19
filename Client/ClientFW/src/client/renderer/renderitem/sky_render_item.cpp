@@ -51,9 +51,13 @@ namespace client_fw
 			{
 			case client_fw::eSkyType::kCube:
 			{
-				UINT index = std::static_pointer_cast<SkyCubeComponent>(last_sky)->GetCubeMapTexture()->GetResourceIndex();
-				sky_frame_resource->GetCubeTextureIndexData()->CopyData(0,
-					RSCubeTextureIndexData{ index });
+				const auto& sky_cube_component = std::static_pointer_cast<SkyCubeComponent>(last_sky);
+				if (sky_cube_component->GetCubeMapTexture() != nullptr)
+				{
+					UINT index = sky_cube_component->GetCubeMapTexture()->GetResourceIndex();
+					sky_frame_resource->GetCubeTextureIndexData()->CopyData(0,
+						RSCubeTextureIndexData{ index });
+				}
 				break;
 			}
 			case client_fw::eSkyType::kSphere:

@@ -19,8 +19,9 @@ namespace client_fw
 		SPtr<SkyCubeComponent> m_sky_cube_component;
 
 	public:
+		const SPtr<SkyCubeComponent>& GetSkyCubeComponent() const { return m_sky_cube_component; }
 		const std::string& GetTexturePath() const { return m_texture_path; }
-		void SetTexturePath(const std::string& path) { m_texture_path = path; }
+		void SetTexturePath(const std::string& path);
 	};
 
 }

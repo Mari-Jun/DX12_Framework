@@ -13,10 +13,17 @@ namespace client_fw
 
 	void SkyCubeComponent::SetCubeMapTexture(const std::string& path)
 	{
-		const auto& texture = AssetStore::LoadCubeMapTexture(path);
-		if (texture != nullptr)
-			SetCubeMapTexture(texture);
+		if (path.empty() == false)
+		{
+			const auto& texture = AssetStore::LoadCubeMapTexture(path);
+			if (texture != nullptr)
+				SetCubeMapTexture(texture);
+			else
+				LOG_ERROR("Could not find texture : {0}", path);
+		}
 		else
-			LOG_ERROR("Could not find texture : {0}", path);
+		{
+			LOG_WARN("file path is empty");
+		}
 	}
 }
