@@ -93,78 +93,124 @@ namespace client_fw
 
 			if (camera->GetCameraState() == eCameraState::kActive)
 			{
-				const auto& render_texture = camera->GetRenderTexture();
-				const auto& blur_texture1 = camera->GetRWTexture("pp texture 1");
-				const auto& blur_texture2 = camera->GetRWTexture("pp texture 2");
+				gpu_address = frame_resource->GetRenderCameraPostProcessingData()->GetResource()->GetGPUVirtualAddress() +
+					index * frame_resource->GetRenderCameraPostProcessingData()->GetByteSize();
 
-				if (blur_texture1->GetResource() != nullptr && blur_texture2->GetResource() != nullptr)
-				{
-					const auto& post_procssing_info = camera->GetPostProcessingInfo();
+				command_list->SetComputeRootConstantBufferView(2, gpu_address);
 
-					gpu_address = frame_resource->GetRenderCameraPostProcessingData()->GetResource()->GetGPUVirtualAddress() +
-						index * frame_resource->GetRenderCameraPostProcessingData()->GetByteSize();
-
-					command_list->SetComputeRootConstantBufferView(2, gpu_address);
-
-					if (post_procssing_info->use_blur)
-					{
-						command_list->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(render_texture->GetResource(),
-							D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_STATE_COPY_SOURCE));
-						command_list->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(blur_texture1->GetResource(),
-							D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COPY_DEST));
-
-						command_list->CopyResource(blur_texture1->GetResource(), render_texture->GetResource());
-
-						command_list->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(blur_texture1->GetResource(),
-							D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_GENERIC_READ));
-						command_list->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(blur_texture2->GetResource(),
-							D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_UNORDERED_ACCESS));
-
-						for (int i = 0; i < post_procssing_info->blur_count; ++i)
-						{
-							command_list->SetPipelineState(m_pipeline_states.at(level_type)[0].Get());
-							command_list->SetComputeRootDescriptorTable(0, blur_texture1->GetGPUHandle());
-							command_list->SetComputeRootDescriptorTable(1, blur_texture2->GetGPUHandle());
-
-							UINT num_group_x = static_cast<UINT>(ceilf(static_cast<float>(blur_texture1->GetTextureSize().x) / 256.0f));
-							command_list->Dispatch(num_group_x, blur_texture1->GetTextureSize().y, 1);
-
-							command_list->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(blur_texture1->GetResource(),
-								D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_STATE_UNORDERED_ACCESS));
-							command_list->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(blur_texture2->GetResource(),
-								D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_GENERIC_READ));
-
-							command_list->SetPipelineState(m_pipeline_states.at(level_type)[1].Get());
-							command_list->SetComputeRootDescriptorTable(1, blur_texture1->GetGPUHandle());
-							command_list->SetComputeRootDescriptorTable(0, blur_texture2->GetGPUHandle());
-
-							UINT num_group_y = static_cast<UINT>(ceilf(static_cast<float>(blur_texture1->GetTextureSize().y) / 256.0f));
-							command_list->Dispatch(blur_texture1->GetTextureSize().x, num_group_y, 1);
-
-							command_list->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(blur_texture1->GetResource(),
-								D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_GENERIC_READ));
-							command_list->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(blur_texture2->GetResource(),
-								D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_STATE_UNORDERED_ACCESS));
-						}
-
-						command_list->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(render_texture->GetResource(),
-							D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_COPY_DEST));
-						command_list->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(blur_texture1->GetResource(),
-							D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_STATE_COPY_SOURCE));
-
-						command_list->CopyResource(render_texture->GetResource(), blur_texture1->GetResource());
-
-						command_list->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(render_texture->GetResource(),
-							D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_GENERIC_READ));
-						command_list->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(blur_texture1->GetResource(),
-							D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_COMMON));
-						command_list->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(blur_texture2->GetResource(),
-							D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COMMON));
-					}
-				}
+				DrawSobelEdge(command_list, level_type, camera);
+				DrawBlur(command_list, level_type, camera);
 			}
 
 			++index;
+		}
+	}
+
+	void RenderCameraPostProcessingShader::DrawSobelEdge(ID3D12GraphicsCommandList* command_list, eRenderLevelType level_type, 
+		const SPtr<RenderCameraComponent>& camera) const
+	{
+		const auto& render_texture = camera->GetRenderTexture();
+		const auto& blur_texture1 = camera->GetRWTexture("pp texture 1");
+
+		if (blur_texture1->GetResource() != nullptr)
+		{
+			const auto& post_procssing_info = camera->GetPostProcessingInfo();
+
+			if (post_procssing_info->use_sobel_edge)
+			{
+				command_list->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(blur_texture1->GetResource(),
+					D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_UNORDERED_ACCESS));
+
+				command_list->SetPipelineState(m_pipeline_states.at(level_type)[2].Get());
+				command_list->SetComputeRootDescriptorTable(0, render_texture->GetGPUHandle());
+				command_list->SetComputeRootDescriptorTable(1, blur_texture1->GetGPUHandle());
+
+				UINT num_group_x = static_cast<UINT>(ceilf(static_cast<float>(blur_texture1->GetTextureSize().x) / 16.0f));
+				UINT num_group_y = static_cast<UINT>(ceilf(static_cast<float>(blur_texture1->GetTextureSize().y) / 16.0f));
+
+				command_list->Dispatch(num_group_x, num_group_y, 1);
+
+				command_list->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(render_texture->GetResource(),
+					D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_STATE_COPY_DEST));
+				command_list->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(blur_texture1->GetResource(),
+					D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COPY_SOURCE));
+
+				command_list->CopyResource(render_texture->GetResource(), blur_texture1->GetResource());
+
+				command_list->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(render_texture->GetResource(),
+					D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_GENERIC_READ));
+				command_list->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(blur_texture1->GetResource(),
+					D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_COMMON));
+			}
+		}
+	}
+
+	void RenderCameraPostProcessingShader::DrawBlur(ID3D12GraphicsCommandList* command_list, eRenderLevelType level_type,
+		const SPtr<RenderCameraComponent>& camera) const
+	{
+		const auto& render_texture = camera->GetRenderTexture();
+		const auto& blur_texture1 = camera->GetRWTexture("pp texture 1");
+		const auto& blur_texture2 = camera->GetRWTexture("pp texture 2");
+
+		if (blur_texture1->GetResource() != nullptr && blur_texture2->GetResource() != nullptr)
+		{
+			const auto& post_procssing_info = camera->GetPostProcessingInfo();
+
+			if (post_procssing_info->use_blur)
+			{
+				command_list->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(render_texture->GetResource(),
+					D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_STATE_COPY_SOURCE));
+				command_list->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(blur_texture1->GetResource(),
+					D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COPY_DEST));
+
+				command_list->CopyResource(blur_texture1->GetResource(), render_texture->GetResource());
+
+				command_list->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(blur_texture1->GetResource(),
+					D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_GENERIC_READ));
+				command_list->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(blur_texture2->GetResource(),
+					D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_UNORDERED_ACCESS));
+
+				for (int i = 0; i < post_procssing_info->blur_count; ++i)
+				{
+					command_list->SetPipelineState(m_pipeline_states.at(level_type)[0].Get());
+					command_list->SetComputeRootDescriptorTable(0, blur_texture1->GetGPUHandle());
+					command_list->SetComputeRootDescriptorTable(1, blur_texture2->GetGPUHandle());
+
+					UINT num_group_x = static_cast<UINT>(ceilf(static_cast<float>(blur_texture1->GetTextureSize().x) / 256.0f));
+					command_list->Dispatch(num_group_x, blur_texture1->GetTextureSize().y, 1);
+
+					command_list->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(blur_texture1->GetResource(),
+						D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_STATE_UNORDERED_ACCESS));
+					command_list->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(blur_texture2->GetResource(),
+						D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_GENERIC_READ));
+
+					command_list->SetPipelineState(m_pipeline_states.at(level_type)[1].Get());
+					command_list->SetComputeRootDescriptorTable(1, blur_texture1->GetGPUHandle());
+					command_list->SetComputeRootDescriptorTable(0, blur_texture2->GetGPUHandle());
+
+					UINT num_group_y = static_cast<UINT>(ceilf(static_cast<float>(blur_texture1->GetTextureSize().y) / 256.0f));
+					command_list->Dispatch(blur_texture1->GetTextureSize().x, num_group_y, 1);
+
+					command_list->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(blur_texture1->GetResource(),
+						D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_GENERIC_READ));
+					command_list->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(blur_texture2->GetResource(),
+						D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_STATE_UNORDERED_ACCESS));
+				}
+
+				command_list->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(render_texture->GetResource(),
+					D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_COPY_DEST));
+				command_list->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(blur_texture1->GetResource(),
+					D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_STATE_COPY_SOURCE));
+
+				command_list->CopyResource(render_texture->GetResource(), blur_texture1->GetResource());
+
+				command_list->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(render_texture->GetResource(),
+					D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_GENERIC_READ));
+				command_list->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(blur_texture1->GetResource(),
+					D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_COMMON));
+				command_list->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(blur_texture2->GetResource(),
+					D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COMMON));
+			}
 		}
 	}
 
@@ -176,6 +222,8 @@ namespace client_fw
 			return CompileShader(L"../ClientFW/src/client/renderer/hlsl/RenderCameraPostProcessing.hlsl", "CSHorizontalBlur", "cs_5_1", shader_blob);
 		case 1:
 			return CompileShader(L"../ClientFW/src/client/renderer/hlsl/RenderCameraPostProcessing.hlsl", "CSVerticalBlur", "cs_5_1", shader_blob);
+		case 2:
+			return CompileShader(L"../ClientFW/src/client/renderer/hlsl/RenderCameraPostProcessing.hlsl", "CSSobelEdge", "cs_5_1", shader_blob);
 		default:
 			return D3D12_SHADER_BYTECODE();
 		}
@@ -188,7 +236,7 @@ namespace client_fw
 		switch (render_level->GetRenderLevelType())
 		{
 		case eRenderLevelType::kPostProcess:
-			result &= CreatePipelineState(device, render_level, 2);
+			result &= CreatePipelineState(device, render_level, 3);
 			break;
 		default:
 			LOG_ERROR("Could not support {0} from {1}",

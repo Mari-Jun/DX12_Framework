@@ -37,6 +37,10 @@ namespace client_fw
         std::vector<SPtr<RenderCameraComponent>> m_render_cameras;
 
     private:
+        void DrawSobelEdge(ID3D12GraphicsCommandList* command_list, eRenderLevelType level_type,
+            const SPtr<RenderCameraComponent>& camera) const;
+        void DrawBlur(ID3D12GraphicsCommandList* command_list, eRenderLevelType level_type, 
+            const SPtr<RenderCameraComponent>& camera) const;
         BlurInfo GetBlurInfo(float sigma) const;
 	};
 }

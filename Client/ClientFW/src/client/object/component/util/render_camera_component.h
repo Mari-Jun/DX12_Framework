@@ -9,6 +9,7 @@ namespace client_fw
 		bool use_blur = false;
 		float blur_sigma = 2.5f;
 		int blur_count = 4;
+		bool use_sobel_edge = false;
 	};
 
 	class RenderTexture;
