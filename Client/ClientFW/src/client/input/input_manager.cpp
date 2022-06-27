@@ -40,7 +40,7 @@ namespace client_fw
             GetCursorPos(&pos);
             ScreenToClient(window->hWnd, &pos);
 
-            m_mouse_position[ToUnderlying(EMousePosState::kCur)] = IVec2(pos.x, pos.y);
+            m_mouse_position[ToUnderlying(EMousePosState::kCur)] = IVec2(pos.x, pos.y) - window->viewport_pos;
         }
     }
 

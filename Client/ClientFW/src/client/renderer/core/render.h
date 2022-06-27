@@ -71,7 +71,7 @@ namespace client_fw
 		static const UPtr<IngameViewport>& GetIngameViewport();
 
 	public:
-		static Vec2 GetWindowSize();
+		static IVec2 GetViewportSize();
 		static HWND GetWindowHWND();
 
 		static std::string ConvertRenderLevelType(eRenderLevelType type);

@@ -329,19 +329,30 @@ namespace client_fw
 
 	void RenderSystem::UpdateViewport()
 	{
+		const auto& window = m_window.lock();
+
 		if (m_ingame_viewport == nullptr)
 		{
-			const auto& window = m_window.lock();
 			m_render_camera_manager->UpdateMainCameraViewport(window->width, window->height);
+			window->viewport_pos = IVec2(0, 0);
+			window->viewport_size = IVec2(window->width, window->height);
 		}
 		else
 		{
-			IVec2 size;
-			if(m_ready_ingame_viewport == nullptr)
+			IVec2 pos, size;
+			if (m_ready_ingame_viewport == nullptr)
+			{
+				pos = m_ingame_viewport->GetViewportPosition();
 				size = m_ingame_viewport->GetViewportSize();
+			}
 			else
+			{
+				pos = m_ready_ingame_viewport->GetViewportPosition();
 				size = m_ready_ingame_viewport->GetViewportSize();
+			}
 			m_render_camera_manager->UpdateMainCameraViewport(size.x, size.y);
+			window->viewport_pos = pos;
+			window->viewport_size = size;
 		}
 		SetWaitGpuComplete(true);
 	}

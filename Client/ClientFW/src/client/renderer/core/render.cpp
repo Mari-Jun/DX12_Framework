@@ -67,10 +67,10 @@ namespace client_fw
 		return s_render_system->GetIngameViewport();
 	}
 
-	Vec2 Render::GetWindowSize()
+	IVec2 Render::GetViewportSize()
 	{
 		const auto& window = s_render_system->GetWindow();
-		return Vec2(static_cast<float>(window->width), static_cast<float>(window->height));
+		return window->viewport_size;
 	}
 
 	HWND Render::GetWindowHWND()

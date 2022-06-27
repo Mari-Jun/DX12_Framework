@@ -37,7 +37,7 @@ namespace client_fw
 
 	void UIRenderItem::Update(ID3D12Device* device, eRenderLevelType level_type)
 	{
-		Vec2 window_size = Render::GetWindowSize();
+		IVec2 window_size = Render::GetViewportSize();
 
 		const auto& ui_manager = UserInterfaceManager::GetUIManager();
 
