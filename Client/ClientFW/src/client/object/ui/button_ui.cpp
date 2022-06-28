@@ -10,24 +10,24 @@
 namespace client_fw
 {
 	ButtonUI::ButtonUI(const std::string& name, const Vec2& size)
-		: UserInterface(name, size, 1), m_button_state(eButtonState::kUnhovered)
+		: UserInterface(name, size, 1), m_button_state(eButtonState::kNormal)
 	{
-		m_normal_texture = CreateSPtr<UITexture>(m_position, m_size, nullptr);
-		m_hovered_texture = CreateSPtr<UITexture>(m_position, m_size, nullptr);
-		m_pressed_texture = CreateSPtr<UITexture>(m_position, m_size, nullptr);
+		m_button_textures[eButtonState::kNormal] = CreateSPtr<UITexture>(m_position, m_size, nullptr);
+		m_button_textures[eButtonState::kHovered] = CreateSPtr<UITexture>(m_position, m_size, nullptr);
+		m_button_textures[eButtonState::kPressed] = CreateSPtr<UITexture>(m_position, m_size, nullptr);
 	}
 
 	bool ButtonUI::Initialize()
 	{
-		SetVisibleTexture(m_normal_texture, 0);
+		SetVisibleTexture(m_button_textures[eButtonState::kNormal], 0);
 
 		EventSystem::GetEventSystem().GetUIEventManager()->RegisterEvent(
 			CreateUPtr<UIEventInfo>(shared_from_this(),
 				[this]() {
-					if (m_button_state == eButtonState::kUnhovered)
+					if (m_button_state == eButtonState::kNormal)
 					{
 						m_button_state = eButtonState::kHovered;
-						SetVisibleTexture(m_hovered_texture, 0);
+						SetVisibleTexture(m_button_textures[eButtonState::kHovered], 0);
 						if (m_hovered_function != nullptr)
 							m_hovered_function();
 					}
@@ -35,7 +35,7 @@ namespace client_fw
 					if (Input::IsKeyPressed(eKey::kLButton) && Input::IsConsumedKey(eKey::kLButton) == false)
 					{
 						m_button_state = eButtonState::kPressed;
-						SetVisibleTexture(m_pressed_texture, 0);
+						SetVisibleTexture(m_button_textures[eButtonState::kPressed], 0);
 						if (m_pressed_function != nullptr)
 							m_pressed_function();
 					}
@@ -51,18 +51,18 @@ namespace client_fw
 						}
 
 						m_button_state = eButtonState::kHovered;
-						SetVisibleTexture(m_hovered_texture, 0);
+						SetVisibleTexture(m_button_textures[eButtonState::kHovered], 0);
 					}
 				},
 				[this]()
 				{
-					if (m_button_state != eButtonState::kUnhovered)
+					if (m_button_state != eButtonState::kNormal)
 					{
 						if ((m_button_state != eButtonState::kPressed && Input::IsKeyPressed(eKey::kLButton) == false)
 							|| (m_button_state == eButtonState::kPressed && Input::IsKeyReleased(eKey::kLButton)))
 						{
-							m_button_state = eButtonState::kUnhovered;
-							SetVisibleTexture(m_normal_texture, 0);
+							m_button_state = eButtonState::kNormal;
+							SetVisibleTexture(m_button_textures[eButtonState::kNormal], 0);
 							if (m_unhovered_function != nullptr)
 								m_unhovered_function();
 						}
@@ -76,58 +76,41 @@ namespace client_fw
 	void ButtonUI::SetPosition(const Vec2& position)
 	{
 		UserInterface::SetPosition(position);
-		m_normal_texture->SetPosition(vec2::ZERO);
-		m_hovered_texture->SetPosition(vec2::ZERO);
-		m_pressed_texture->SetPosition(vec2::ZERO);
+		for (const auto& [type, texture] : m_button_textures)
+			texture->SetPosition(vec2::ZERO);
 	}
 
 	void ButtonUI::SetSize(const Vec2& size)
 	{
 		UserInterface::SetSize(size);
-		m_normal_texture->SetSize(size);
-		m_hovered_texture->SetSize(size);
-		m_pressed_texture->SetSize(size);
+		for (const auto& [type, texture] : m_button_textures)
+			texture->SetSize(size);
 	}
 
-	void ButtonUI::SetNormalTexture(const std::string& path)
+	void ButtonUI::SetNormalTexture(const std::string& path) const 
 	{
 		const auto& texture = AssetStore::LoadTexture(path);
 		if (texture != nullptr)
-			SetNormalTexture(texture);
+			SetButtonTexture(eButtonState::kNormal, texture);
 		else
 			LOG_WARN("Could not find texture : {0}", path);
 	}
 
-	void ButtonUI::SetNormalTexture(const SPtr<Texture>& texture)
-	{
-		m_normal_texture->SetTexture(texture);
-	}
-
-	void ButtonUI::SetHoveredTexture(const std::string& path)
+	void ButtonUI::SetHoveredTexture(const std::string& path) const
 	{
 		const auto& texture = AssetStore::LoadTexture(path);
 		if (texture != nullptr)
-			SetHoveredTexture(texture);
+			SetButtonTexture(eButtonState::kHovered, texture);
 		else
 			LOG_WARN("Could not find texture : {0}", path);
 	}
 
-	void ButtonUI::SetHoveredTexture(const SPtr<Texture>& texture)
-	{
-		m_hovered_texture->SetTexture(texture);
-	}
-
-	void ButtonUI::SetPressedTexture(const std::string& path)
+	void ButtonUI::SetPressedTexture(const std::string& path) const
 	{
 		const auto& texture = AssetStore::LoadTexture(path);
 		if (texture != nullptr)
-			SetPressedTexture(texture);
+			SetButtonTexture(eButtonState::kPressed, texture);
 		else
 			LOG_WARN("Could not find texture : {0}", path);
-	}
-
-	void ButtonUI::SetPressedTexture(const SPtr<Texture>& texture)
-	{
-		m_pressed_texture->SetTexture(texture);
 	}
 }

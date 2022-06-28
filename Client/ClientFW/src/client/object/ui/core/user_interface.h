@@ -34,6 +34,7 @@ namespace client_fw
 		const Vec2& GetTilling() const { return m_tilling; }
 		void SetTilling(const Vec2& tilling) { m_tilling = tilling; }
 		const SPtr<Texture>& GetTexture() const { return m_texture; }
+		void SetTexture(const std::string& path);
 		void SetTexture(const SPtr<Texture>& texture) { m_texture = texture; }
 	};
 

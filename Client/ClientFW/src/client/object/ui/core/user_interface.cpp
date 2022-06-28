@@ -2,9 +2,18 @@
 #include "client/object/ui/core/user_interface.h"
 #include "client/renderer/core/render.h"
 #include "client/input/input.h"
+#include "client/asset/core/asset_store.h"
+#include "client/asset/texture/texture.h"
 
 namespace client_fw
 {
+	void UITexture::SetTexture(const std::string& path)
+	{
+		const auto& texture = AssetStore::LoadTexture(path);
+		if (texture != nullptr)
+			SetTexture(texture);
+	}
+
 	UserInterface::UserInterface(const std::string& name, const Vec2& size, size_t num_of_visible_texture)
 		: m_name(name), m_position(vec2::ZERO), m_size(size)
 	{

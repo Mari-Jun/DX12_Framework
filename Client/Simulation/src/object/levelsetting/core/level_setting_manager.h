@@ -1,6 +1,7 @@
 #pragma once
 #include <client/imgui/imgui.h>
 #include <client/imgui/imgui_internal.h>
+#include <client/imgui/imgui_stdlib.h>
 #include <client/imgui/imgui_helper.h>
 
 namespace simulation
