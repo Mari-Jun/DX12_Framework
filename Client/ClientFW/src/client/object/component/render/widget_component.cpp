@@ -37,7 +37,7 @@ namespace client_fw
 	void WidgetComponent::Shutdown()
 	{
 		if (m_user_interface_layer != nullptr)
-			m_user_interface_layer->Shutdown();
+			m_user_interface_layer->ShutdownUILayer();
 		RenderComponent::Shutdown();
 	}
 

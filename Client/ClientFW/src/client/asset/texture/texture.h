@@ -10,7 +10,7 @@ namespace client_fw
 		kRenderUI, kViewport, kRW
 	};
 
-	class Texture : public Asset
+	class Texture : public Asset, public std::enable_shared_from_this<Texture>
 	{
 	public:
 		Texture(eTextureType type);
@@ -18,6 +18,15 @@ namespace client_fw
 
 		virtual bool Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list) { return true; }
 		virtual bool Initialize(ID3D12Device* device) { return true; }
+		// 사용자가 Texture를 사용할 때 그 Texture가 원본인 경우 (즉 CreateSPtr<Texture>와 같은 형태를 사용한 경우)
+		// Shutdown함수를 객체가 소멸할 때 호출해줘야한다.
+		virtual void Shutdown() override;	
+
+	private:
+		std::vector<std::function<void()>> m_shutdown_functions;
+
+	public:
+		void RegisterShutdownFunction(std::function<void()> function) { m_shutdown_functions.emplace_back(std::move(function)); }
 
 	protected:
 		eTextureType m_texture_type;
@@ -243,6 +252,8 @@ namespace client_fw
 		ComPtr<ID2D1Bitmap1> m_2d_render_target;
 
 	public:
+		const IVec2& GetTextureSize() const { return m_texture_size; }
+		void SetTextureSize(const IVec2& size) { m_texture_size = size; }
 		ComPtr<ID3D11Resource> GetWrappedRenderTarget() const { return m_wrapped_render_target; }
 		ID2D1Bitmap1* Get2DRenderTarget() const { return m_2d_render_target.Get(); }
 	};

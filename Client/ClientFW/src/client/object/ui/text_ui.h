@@ -28,12 +28,19 @@ namespace client_fw
         std::string GetText() const;
         void SetText(const std::string& text);
         void SetText(const std::wstring& text);
+        const Vec4& GetColor() const;
         void SetColor(const Vec4& color);
+        const std::wstring& GetFontName() const;
         void SetFontName(const std::wstring& font_name);
+        UINT GetFontSize() const;
         void SetFontSize(UINT font_size);
+        DWRITE_FONT_WEIGHT GetFontWeight() const;
         void SetFontWeight(DWRITE_FONT_WEIGHT font_weight);
+        DWRITE_FONT_STYLE GetFontStyle() const;
         void SetFontSytle(DWRITE_FONT_STYLE font_style);
+        DWRITE_TEXT_ALIGNMENT GetTextAlignment() const;
         void SetTextAlignment(DWRITE_TEXT_ALIGNMENT text_alignment);
+        DWRITE_PARAGRAPH_ALIGNMENT GetParagraphAlignment() const;
         void SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT paragraph_alignment);
     };
 }

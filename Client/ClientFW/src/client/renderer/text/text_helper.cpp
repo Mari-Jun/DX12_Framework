@@ -64,6 +64,11 @@ namespace client_fw
 		m_text_texture = CreateSPtr<RenderTextTexture>(size);
 	}
 
+	TextInfo::~TextInfo()
+	{
+		m_text_texture->Shutdown();
+	}
+
 	void TextInfo::RegisterToTextManager()
 	{
 		TextHelper::RegisterTextToTextManager(shared_from_this());

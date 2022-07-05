@@ -43,7 +43,6 @@ namespace client_fw
 
 		LevelManager::GetLevelManager().AddLevelCloseEvent([this]() {
 			m_num_of_render_texture_data = START_INDEX_RENDER_TEXTURE;
-			m_num_of_render_text_texture_data = START_INDEX_RENDER_TEXT_TEXTURE;
 			m_num_of_render_cube_map_texture_data = START_INDEX_RENDER_CUBE_MAP_TEXTURE;
 			m_num_of_render_array_texture_data = START_INDEX_RENDER_ARRAY_TEXTURE;
 			});
@@ -60,6 +59,7 @@ namespace client_fw
 			return false;
 		}
 		
+		m_texture_usage.fill(false);
 
 		return true;
 	}
@@ -481,20 +481,28 @@ namespace client_fw
 
 	void RenderResourceManager::UpdateRenderTextTextureResource(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
 	{
-		CD3DX12_CPU_DESCRIPTOR_HANDLE cpu_handle(m_texture_desciptor_heap->GetCPUDescriptorHandleForHeapStart());
-		cpu_handle.Offset(m_num_of_render_text_texture_data, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
-		CD3DX12_GPU_DESCRIPTOR_HANDLE gpu_handle(m_texture_desciptor_heap->GetGPUDescriptorHandleForHeapStart());
-		gpu_handle.Offset(m_num_of_render_cube_map_texture_data, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
+		auto iter = m_texture_usage.begin() + START_INDEX_RENDER_TEXT_TEXTURE;
 
 		for (const auto& texture : m_ready_render_text_textures)
 		{
+			iter = std::find(iter, m_texture_usage.begin() + END_INDEX_RENDER_TEXT_TEXTURE, false);
+
+			UINT index = static_cast<UINT>(std::distance(m_texture_usage.begin(), iter));
+
+			CD3DX12_CPU_DESCRIPTOR_HANDLE cpu_handle(m_texture_desciptor_heap->GetCPUDescriptorHandleForHeapStart(), 
+				index, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
+			CD3DX12_GPU_DESCRIPTOR_HANDLE gpu_handle(m_texture_desciptor_heap->GetGPUDescriptorHandleForHeapStart(),
+				index, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
+
 			device->CreateShaderResourceView(texture->GetResource(),
 				&TextureCreator::GetShaderResourceViewDesc(texture->GetResource()), cpu_handle);
-
-			texture->SetResourceIndex(m_num_of_render_text_texture_data++);
+			
+			texture->RegisterShutdownFunction([this, index]() {
+				m_texture_usage[index] = false;
+				});
+			m_texture_usage[index] = true;
+			texture->SetResourceIndex(index);
 			texture->SetGPUHandle(gpu_handle);
-			cpu_handle.Offset(1, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
-			gpu_handle.Offset(1, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
 		}
 
 		m_ready_render_text_textures.clear();

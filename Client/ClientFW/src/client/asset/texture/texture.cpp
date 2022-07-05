@@ -15,6 +15,13 @@ namespace client_fw
 	{
 	}
 
+	void Texture::Shutdown()
+	{
+		for (const auto& function : m_shutdown_functions)
+			function();
+		m_shutdown_functions.clear();
+	}
+
 	ExternalTexture::ExternalTexture()
 		: Texture(eTextureType::kExternal)
 	{
