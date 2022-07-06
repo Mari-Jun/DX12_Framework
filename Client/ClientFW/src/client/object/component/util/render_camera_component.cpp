@@ -3,6 +3,7 @@
 #include "client/object/actor/core/actor.h"
 #include "client/physics/collision/collisioner/ray_collisioner.h"
 #include "client/renderer/core/render.h"
+#include "client/asset/texture/texture.h"
 
 namespace client_fw
 {
@@ -10,6 +11,15 @@ namespace client_fw
 		: CameraComponent(eCameraUsage::kBasic, name)
 	{
 		m_post_processing_info = CreateUPtr<RenderCameraPostProcessingInfo>();
+	}
+
+	void RenderCameraComponent::Shutdown()
+	{
+		for (const auto& [name, texture] : m_rw_textures)
+			texture->Shutdown();
+		if (m_render_texture != nullptr)
+			m_render_texture->Shutdown();
+		CameraComponent::Shutdown();
 	}
 
 	void RenderCameraComponent::UpdateViewMatrix()

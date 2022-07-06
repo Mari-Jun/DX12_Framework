@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "client/object/component/util/shadow_cube_camera_component.h"
+#include "client/asset/texture/texture.h"
 
 namespace client_fw
 {
@@ -13,6 +14,15 @@ namespace client_fw
 	{
 		bool ret = CameraComponent::Initialize();
 		return ret;
+	}
+
+	void ShadowCubeCameraComponent::Shutdown()
+	{
+		if (m_shadow_cube_texture != nullptr)
+			m_shadow_cube_texture->Shutdown();
+		if (m_static_shadow_cube_texture != nullptr)
+			m_static_shadow_cube_texture->Shutdown();
+		CameraComponent::Shutdown();
 	}
 
 	void ShadowCubeCameraComponent::Update(float delta_time)

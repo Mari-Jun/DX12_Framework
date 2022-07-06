@@ -12,6 +12,7 @@ namespace client_fw
 		virtual ~ShadowCubeCameraComponent() = default;
 
 		virtual bool Initialize() override;
+		virtual void Shutdown() override;
 		virtual void Update(float delta_time) override;
 		virtual void UpdateViewMatrix() override;
 		virtual void UpdateProjectionMatrix() override;

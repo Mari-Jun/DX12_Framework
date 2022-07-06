@@ -42,9 +42,6 @@ namespace client_fw
 		m_texture_desciptor_heap->SetName(L"Texture descriptor");
 
 		LevelManager::GetLevelManager().AddLevelCloseEvent([this]() {
-			m_num_of_render_texture_data = START_INDEX_RENDER_TEXTURE;
-			m_num_of_render_cube_map_texture_data = START_INDEX_RENDER_CUBE_MAP_TEXTURE;
-			m_num_of_render_array_texture_data = START_INDEX_RENDER_ARRAY_TEXTURE;
 			});
 
 		CD3DX12_CPU_DESCRIPTOR_HANDLE cpu_handle(m_texture_desciptor_heap->GetCPUDescriptorHandleForHeapStart());
@@ -229,24 +226,22 @@ namespace client_fw
 
 	void RenderResourceManager::UpdateExternalTextureResource(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
 	{
-		CD3DX12_CPU_DESCRIPTOR_HANDLE cpu_handle(m_texture_desciptor_heap->GetCPUDescriptorHandleForHeapStart());
-		cpu_handle.Offset(m_num_of_external_texture_data, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
-		CD3DX12_GPU_DESCRIPTOR_HANDLE gpu_handle(m_texture_desciptor_heap->GetGPUDescriptorHandleForHeapStart());
-		gpu_handle.Offset(m_num_of_external_texture_data, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
+		auto iter = m_texture_usage.begin();
 
 		for (const auto& texture : m_ready_external_textures)
 		{
 			texture->Initialize(device, command_list);
 
-			device->CreateShaderResourceView(texture->GetResource(),
-				&TextureCreator::GetShaderResourceViewDesc(texture->GetResource()), cpu_handle);
+			iter = std::find(iter, m_texture_usage.begin() + END_INDEX_EXTERNAL_TEXTURE, false);
 
-			texture->SetResourceIndex(m_num_of_external_texture_data++);
-			texture->SetGPUHandle(gpu_handle);
-			cpu_handle.Offset(1, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
-			gpu_handle.Offset(1, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
-
-			LOG_INFO(texture->GetPath());
+			UpdateTextureResource<ExternalTexture>(iter, texture, [device]
+			(auto index, const auto& texture, auto cpu_handle, auto gpu_handle) {
+					device->CreateShaderResourceView(texture->GetResource(),
+						&TextureCreator::GetShaderResourceViewDesc(texture->GetResource()), cpu_handle);
+					texture->SetResourceIndex(index);
+					texture->SetGPUHandle(gpu_handle);
+					LOG_INFO("{0} - index [{1}]", texture->GetPath(), index);
+				});
 		}
 
 		m_ready_external_textures.clear();
@@ -254,24 +249,22 @@ namespace client_fw
 
 	void RenderResourceManager::UpdateExternalCubeMapTextureResource(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
 	{
-		CD3DX12_CPU_DESCRIPTOR_HANDLE cpu_handle(m_texture_desciptor_heap->GetCPUDescriptorHandleForHeapStart());
-		cpu_handle.Offset(m_num_of_external_cube_map_texture_data, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
-		CD3DX12_GPU_DESCRIPTOR_HANDLE gpu_handle(m_texture_desciptor_heap->GetGPUDescriptorHandleForHeapStart());
-		gpu_handle.Offset(m_num_of_external_cube_map_texture_data, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
+		auto iter = m_texture_usage.begin() + START_INDEX_EXTERNAL_CUBE_MAP_TEXTURE;
 
 		for (const auto& texture : m_ready_external_cube_map_textures)
 		{
 			texture->Initialize(device, command_list);
 
-			device->CreateShaderResourceView(texture->GetResource(),
-				&TextureCreator::GetShaderResourceViewDescForCube(texture->GetResource()), cpu_handle);
+			iter = std::find(iter, m_texture_usage.begin() + END_INDEX_EXTERNAL_CUBE_MAP_TEXTURE, false);
 
-			texture->SetResourceIndex(m_num_of_external_cube_map_texture_data++ - START_INDEX_RENDER_CUBE_MAP_TEXTURE);
-			texture->SetGPUHandle(gpu_handle);
-			cpu_handle.Offset(1, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
-			gpu_handle.Offset(1, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
-
-			LOG_INFO(texture->GetPath());
+			UpdateTextureResource<ExternalCubeMapTexture>(iter, texture, [device]
+			(auto index, const auto& texture, auto cpu_handle, auto gpu_handle) {
+					device->CreateShaderResourceView(texture->GetResource(),
+						&TextureCreator::GetShaderResourceViewDescForCube(texture->GetResource()), cpu_handle);
+					texture->SetResourceIndex(index - START_INDEX_RENDER_CUBE_MAP_TEXTURE);
+					texture->SetGPUHandle(gpu_handle);
+					LOG_INFO("{0} - index [{1}]", texture->GetPath(), index);
+				});
 		}
 
 		m_ready_external_cube_map_textures.clear();
@@ -279,10 +272,7 @@ namespace client_fw
 
 	void RenderResourceManager::UpdateRenderTextureResource(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
 	{
-		CD3DX12_CPU_DESCRIPTOR_HANDLE cpu_handle(m_texture_desciptor_heap->GetCPUDescriptorHandleForHeapStart());
-		cpu_handle.Offset(m_num_of_render_texture_data, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
-		CD3DX12_GPU_DESCRIPTOR_HANDLE gpu_handle(m_texture_desciptor_heap->GetGPUDescriptorHandleForHeapStart());
-		gpu_handle.Offset(m_num_of_render_texture_data, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
+		auto iter = m_texture_usage.begin() + START_INDEX_RENDER_TEXTURE;
 
 		for (const auto& texture : m_ready_render_textures)
 		{
@@ -290,61 +280,64 @@ namespace client_fw
 			texture->Initialize(device, command_list,
 				{ DXGI_FORMAT_R8G8B8A8_UNORM,  DXGI_FORMAT_R11G11B10_FLOAT, DXGI_FORMAT_R8G8B8A8_UNORM });
 
-			for (UINT i = 0; i < texture->GetNumOfGBufferTexture(); ++i)
-			{
-				if (texture->GetGBufferResourceIndex(i) >= 0)
-				{
-					cpu_handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(m_texture_desciptor_heap->GetCPUDescriptorHandleForHeapStart());
-					cpu_handle.Offset(texture->GetGBufferResourceIndex(i), D3DUtil::s_cbvsrvuav_descirptor_increment_size);
-					gpu_handle = CD3DX12_GPU_DESCRIPTOR_HANDLE(m_texture_desciptor_heap->GetGPUDescriptorHandleForHeapStart());
-					gpu_handle.Offset(texture->GetGBufferResourceIndex(i), D3DUtil::s_cbvsrvuav_descirptor_increment_size);
-					texture->SetGBufferGPUHandle(i, gpu_handle);
-				}
-
-				device->CreateShaderResourceView(texture->GetGBufferTexture(i),
-					&TextureCreator::GetShaderResourceViewDesc(texture->GetGBufferTexture(i)), cpu_handle);
-
-				if (texture->GetGBufferResourceIndex(i) < 0)
-				{
-					texture->SetGBufferResourceIndex(i, m_num_of_render_texture_data++);
-					texture->SetGBufferGPUHandle(i, gpu_handle);
-					cpu_handle.Offset(1, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
-					gpu_handle.Offset(1, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
-				}
-			}
-
 			if (texture->GetResourceIndex() >= 0)
 			{
-				cpu_handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(m_texture_desciptor_heap->GetCPUDescriptorHandleForHeapStart());
-				cpu_handle.Offset(texture->GetResourceIndex(), D3DUtil::s_cbvsrvuav_descirptor_increment_size);
+				CD3DX12_CPU_DESCRIPTOR_HANDLE cpu_handle;
+
+				for (UINT i = 0; i < texture->GetNumOfGBufferTexture(); ++i)
+				{
+					cpu_handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(m_texture_desciptor_heap->GetCPUDescriptorHandleForHeapStart(),
+						texture->GetGBufferResourceIndex(i), D3DUtil::s_cbvsrvuav_descirptor_increment_size);
+
+					device->CreateShaderResourceView(texture->GetGBufferTexture(i),
+						&TextureCreator::GetShaderResourceViewDesc(texture->GetGBufferTexture(i)), cpu_handle);
+				}
+
+				cpu_handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(m_texture_desciptor_heap->GetCPUDescriptorHandleForHeapStart(),
+					texture->GetResourceIndex(), D3DUtil::s_cbvsrvuav_descirptor_increment_size);
+			
+				device->CreateShaderResourceView(texture->GetResource(),
+					&TextureCreator::GetShaderResourceViewDesc(texture->GetResource()), cpu_handle);
+
+				cpu_handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(m_texture_desciptor_heap->GetCPUDescriptorHandleForHeapStart(),
+					texture->GetDSVResourceIndex(), D3DUtil::s_cbvsrvuav_descirptor_increment_size);
+
+				device->CreateShaderResourceView(texture->GetDSVTexture(),
+					&TextureCreator::GetShaderResourceViewDescForDSV(texture->GetDSVTexture()), cpu_handle);
 			}
-
-			device->CreateShaderResourceView(texture->GetResource(),
-				&TextureCreator::GetShaderResourceViewDesc(texture->GetResource()), cpu_handle);
-
-			if (texture->GetResourceIndex() < 0)
+			else
 			{
-				texture->SetResourceIndex(m_num_of_render_texture_data++);
-				texture->SetGPUHandle(gpu_handle);
-				cpu_handle.Offset(1, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
-				gpu_handle.Offset(1, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
-			}
+				for (UINT i = 0; i < texture->GetNumOfGBufferTexture(); ++i)
+				{
+					iter = std::find(iter, m_texture_usage.begin() + END_INDEX_RENDER_TEXTURE, false);
+					
+					UpdateTextureResource<RenderTexture>(iter, texture, [device, i]
+					(auto index, const auto& texture, auto cpu_handle, auto gpu_handle) {
+							device->CreateShaderResourceView(texture->GetGBufferTexture(i),
+								&TextureCreator::GetShaderResourceViewDesc(texture->GetGBufferTexture(i)), cpu_handle);
+							texture->SetGBufferResourceIndex(i, index);
+							texture->SetGBufferGPUHandle(i, gpu_handle);
+						});
+				}
 
-			if (texture->GetDSVResourceIndex() >= 0)
-			{
-				cpu_handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(m_texture_desciptor_heap->GetCPUDescriptorHandleForHeapStart());
-				cpu_handle.Offset(texture->GetDSVResourceIndex(), D3DUtil::s_cbvsrvuav_descirptor_increment_size);
-			}
+				iter = std::find(iter, m_texture_usage.begin() + END_INDEX_RENDER_TEXTURE, false);
 
-			device->CreateShaderResourceView(texture->GetDSVTexture(),
-				&TextureCreator::GetShaderResourceViewDescForDSV(texture->GetDSVTexture()), cpu_handle);
+				UpdateTextureResource<RenderTexture>(iter, texture, [device]
+				(auto index, const auto& texture, auto cpu_handle, auto gpu_handle) {
+						device->CreateShaderResourceView(texture->GetResource(),
+							&TextureCreator::GetShaderResourceViewDesc(texture->GetResource()), cpu_handle);
+						texture->SetResourceIndex(index);
+						texture->SetGPUHandle(gpu_handle);
+					});
 
-			if (texture->GetDSVResourceIndex() < 0)
-			{
-				texture->SetDSVResourceIndex(m_num_of_render_texture_data++);
-				texture->SetDSVGPUHandle(gpu_handle);
-				cpu_handle.Offset(1, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
-				gpu_handle.Offset(1, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
+				iter = std::find(iter, m_texture_usage.begin() + END_INDEX_RENDER_TEXTURE, false);
+				UpdateTextureResource<RenderTexture>(iter, texture, [device]
+				(auto index, const auto& texture, auto cpu_handle, auto gpu_handle) {
+						device->CreateShaderResourceView(texture->GetDSVTexture(),
+							&TextureCreator::GetShaderResourceViewDescForDSV(texture->GetDSVTexture()), cpu_handle);
+						texture->SetDSVResourceIndex(index);
+						texture->SetDSVGPUHandle(gpu_handle);
+					});
 			}
 		}
 
@@ -375,10 +368,7 @@ namespace client_fw
 
 	void RenderResourceManager::UpdateRWTextureResource(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
 	{
-		CD3DX12_CPU_DESCRIPTOR_HANDLE cpu_handle(m_texture_desciptor_heap->GetCPUDescriptorHandleForHeapStart());
-		cpu_handle.Offset(m_num_of_render_texture_data, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
-		CD3DX12_GPU_DESCRIPTOR_HANDLE gpu_handle(m_texture_desciptor_heap->GetGPUDescriptorHandleForHeapStart());
-		gpu_handle.Offset(m_num_of_render_texture_data, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
+		auto iter = m_texture_usage.begin() + START_INDEX_RENDER_TEXTURE;
 
 		for (const auto& texture : m_ready_rw_textures)
 		{
@@ -386,27 +376,39 @@ namespace client_fw
 
 			if (texture->GetResourceIndex() >= 0)
 			{
-				cpu_handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(m_texture_desciptor_heap->GetCPUDescriptorHandleForHeapStart());
-				cpu_handle.Offset(texture->GetResourceIndex(), D3DUtil::s_cbvsrvuav_descirptor_increment_size);
+				CD3DX12_CPU_DESCRIPTOR_HANDLE cpu_handle;
+
+				cpu_handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(m_texture_desciptor_heap->GetCPUDescriptorHandleForHeapStart(),
+					texture->GetResourceIndex(), D3DUtil::s_cbvsrvuav_descirptor_increment_size);
+
+				device->CreateShaderResourceView(texture->GetResource(),
+					&TextureCreator::GetShaderResourceViewDesc(texture->GetResource()), cpu_handle);
+
+				cpu_handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(m_texture_desciptor_heap->GetCPUDescriptorHandleForHeapStart(),
+					texture->GetUAVResourceIndex(), D3DUtil::s_cbvsrvuav_descirptor_increment_size);
+
+				device->CreateUnorderedAccessView(texture->GetResource(), nullptr,
+					&TextureCreator::GetUnorderedAccessViewDesc(texture->GetResource()), cpu_handle);
 			}
-
-			device->CreateShaderResourceView(texture->GetResource(),
-				&TextureCreator::GetShaderResourceViewDesc(texture->GetResource()), cpu_handle);
-
-			cpu_handle.Offset(1, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
-			device->CreateUnorderedAccessView(texture->GetResource(), nullptr,
-				&TextureCreator::GetUnorderedAccessViewDesc(texture->GetResource()), cpu_handle);
-
-			cpu_handle.Offset(1, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
-
-			if (texture->GetResourceIndex() < 0)
+			else
 			{
-				texture->SetResourceIndex(m_num_of_render_texture_data);
-				texture->SetGPUHandle(gpu_handle);
-				gpu_handle.Offset(1, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
-				texture->SetUAVGPUHandle(gpu_handle);
-				gpu_handle.Offset(1, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
-				m_num_of_render_texture_data += 2;
+				iter = std::find(iter, m_texture_usage.begin() + END_INDEX_RENDER_TEXTURE, false);
+				UpdateTextureResource<RWTexture>(iter, texture, [device]
+				(auto index, const auto& texture, auto cpu_handle, auto gpu_handle) {
+						device->CreateShaderResourceView(texture->GetResource(),
+							&TextureCreator::GetShaderResourceViewDesc(texture->GetResource()), cpu_handle);
+						texture->SetResourceIndex(index);
+						texture->SetGPUHandle(gpu_handle);
+					});
+
+				iter = std::find(iter, m_texture_usage.begin() + END_INDEX_RENDER_TEXTURE, false);
+				UpdateTextureResource<RWTexture>(iter, texture, [device]
+				(auto index, const auto& texture, auto cpu_handle, auto gpu_handle) {
+						device->CreateUnorderedAccessView(texture->GetResource(), nullptr,
+							&TextureCreator::GetUnorderedAccessViewDesc(texture->GetResource()), cpu_handle);
+						texture->SetUAVResourceIndex(index);
+						texture->SetUAVGPUHandle(gpu_handle);
+					});
 			}
 		}
 
@@ -415,21 +417,20 @@ namespace client_fw
 
 	void RenderResourceManager::UpdateShadowTextureResource(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
 	{
-		CD3DX12_CPU_DESCRIPTOR_HANDLE cpu_handle(m_texture_desciptor_heap->GetCPUDescriptorHandleForHeapStart());
-		cpu_handle.Offset(m_num_of_render_texture_data, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
-		CD3DX12_GPU_DESCRIPTOR_HANDLE gpu_handle(m_texture_desciptor_heap->GetGPUDescriptorHandleForHeapStart());
-		gpu_handle.Offset(m_num_of_render_texture_data, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
+		auto iter = m_texture_usage.begin() + START_INDEX_RENDER_TEXTURE;
 
 		for (const auto& texture : m_ready_shadow_textures)
 		{
 			texture->Initialize(device, command_list);
 
-			device->CreateShaderResourceView(texture->GetResource(),
-				&TextureCreator::GetShaderResourceViewDescFor32DSV(texture->GetResource()), cpu_handle);
-			texture->SetResourceIndex(m_num_of_render_texture_data++);
-			texture->SetGPUHandle(gpu_handle);
-			cpu_handle.Offset(1, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
-			gpu_handle.Offset(1, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
+			iter = std::find(iter, m_texture_usage.begin() + END_INDEX_RENDER_TEXTURE, false);
+			UpdateTextureResource<Shadow2DTexture>(iter, texture, [device]
+			(auto index, const auto& texture, auto cpu_handle, auto gpu_handle) {
+					device->CreateShaderResourceView(texture->GetResource(),
+						&TextureCreator::GetShaderResourceViewDescFor32DSV(texture->GetResource()), cpu_handle);
+					texture->SetResourceIndex(index);
+					texture->SetGPUHandle(gpu_handle);
+				});			
 		}
 
 		m_ready_shadow_textures.clear();
@@ -437,21 +438,20 @@ namespace client_fw
 
 	void RenderResourceManager::UpdateShadowCubeTextureResource(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
 	{
-		CD3DX12_CPU_DESCRIPTOR_HANDLE cpu_handle(m_texture_desciptor_heap->GetCPUDescriptorHandleForHeapStart());
-		cpu_handle.Offset(m_num_of_render_cube_map_texture_data, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
-		CD3DX12_GPU_DESCRIPTOR_HANDLE gpu_handle(m_texture_desciptor_heap->GetGPUDescriptorHandleForHeapStart());
-		gpu_handle.Offset(m_num_of_render_cube_map_texture_data, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
+		auto iter = m_texture_usage.begin() + START_INDEX_RENDER_CUBE_MAP_TEXTURE;
 
 		for (const auto& texture : m_ready_shadow_cube_textures)
 		{
 			texture->Initialize(device, command_list);
 
-			device->CreateShaderResourceView(texture->GetResource(),
-				&TextureCreator::GetShaderResourceViewDescFor32DSVCube(texture->GetResource()), cpu_handle);
-			texture->SetResourceIndex(m_num_of_render_cube_map_texture_data++ - START_INDEX_RENDER_CUBE_MAP_TEXTURE);
-			texture->SetGPUHandle(gpu_handle);
-			cpu_handle.Offset(1, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
-			gpu_handle.Offset(1, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
+			iter = std::find(iter, m_texture_usage.begin() + END_INDEX_RENDER_CUBE_MAP_TEXTURE, false);
+			UpdateTextureResource<ShadowCubeTexture>(iter, texture, [device]
+			(auto index, const auto& texture, auto cpu_handle, auto gpu_handle) {
+					device->CreateShaderResourceView(texture->GetResource(),
+						&TextureCreator::GetShaderResourceViewDescFor32DSVCube(texture->GetResource()), cpu_handle);
+					texture->SetResourceIndex(index - START_INDEX_RENDER_CUBE_MAP_TEXTURE);
+					texture->SetGPUHandle(gpu_handle);
+				});
 		}
 
 		m_ready_shadow_cube_textures.clear();
@@ -459,21 +459,20 @@ namespace client_fw
 
 	void RenderResourceManager::UpdateShadowArrayTextureResource(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
 	{
-		CD3DX12_CPU_DESCRIPTOR_HANDLE cpu_handle(m_texture_desciptor_heap->GetCPUDescriptorHandleForHeapStart());
-		cpu_handle.Offset(m_num_of_render_array_texture_data, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
-		CD3DX12_GPU_DESCRIPTOR_HANDLE gpu_handle(m_texture_desciptor_heap->GetGPUDescriptorHandleForHeapStart());
-		gpu_handle.Offset(m_num_of_render_array_texture_data, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
+		auto iter = m_texture_usage.begin() + START_INDEX_RENDER_ARRAY_TEXTURE;
 
 		for (const auto& texture : m_ready_shadow_array_textures)
 		{
 			texture->Initialize(device, command_list);
 
-			device->CreateShaderResourceView(texture->GetResource(),
-				&TextureCreator::GetShaderResourceViewDescFor32DSVArray(texture->GetResource(), texture->GetArraySize()), cpu_handle);
-			texture->SetResourceIndex(m_num_of_render_array_texture_data++ - START_INDEX_RENDER_ARRAY_TEXTURE);
-			texture->SetGPUHandle(gpu_handle);
-			cpu_handle.Offset(1, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
-			gpu_handle.Offset(1, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
+			iter = std::find(iter, m_texture_usage.begin() + END_INDEX_RENDER_ARRAY_TEXTURE, false);
+			UpdateTextureResource<ShadowArrayTexture>(iter, texture, [device]
+			(auto index, const auto& texture, auto cpu_handle, auto gpu_handle) {
+					device->CreateShaderResourceView(texture->GetResource(),
+						&TextureCreator::GetShaderResourceViewDescFor32DSVArray(texture->GetResource(), texture->GetArraySize()), cpu_handle);
+					texture->SetResourceIndex(index - START_INDEX_RENDER_ARRAY_TEXTURE);
+					texture->SetGPUHandle(gpu_handle);
+				});		
 		}
 
 		m_ready_shadow_array_textures.clear();
@@ -486,23 +485,13 @@ namespace client_fw
 		for (const auto& texture : m_ready_render_text_textures)
 		{
 			iter = std::find(iter, m_texture_usage.begin() + END_INDEX_RENDER_TEXT_TEXTURE, false);
-
-			UINT index = static_cast<UINT>(std::distance(m_texture_usage.begin(), iter));
-
-			CD3DX12_CPU_DESCRIPTOR_HANDLE cpu_handle(m_texture_desciptor_heap->GetCPUDescriptorHandleForHeapStart(), 
-				index, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
-			CD3DX12_GPU_DESCRIPTOR_HANDLE gpu_handle(m_texture_desciptor_heap->GetGPUDescriptorHandleForHeapStart(),
-				index, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
-
-			device->CreateShaderResourceView(texture->GetResource(),
-				&TextureCreator::GetShaderResourceViewDesc(texture->GetResource()), cpu_handle);
-			
-			texture->RegisterShutdownFunction([this, index]() {
-				m_texture_usage[index] = false;
+			UpdateTextureResource<RenderTextTexture>(iter, texture, [device]
+			(auto index, const auto& texture, auto cpu_handle, auto gpu_handle) {
+					device->CreateShaderResourceView(texture->GetResource(),
+						&TextureCreator::GetShaderResourceViewDesc(texture->GetResource()), cpu_handle);
+					texture->SetResourceIndex(index);
+					texture->SetGPUHandle(gpu_handle);
 				});
-			m_texture_usage[index] = true;
-			texture->SetResourceIndex(index);
-			texture->SetGPUHandle(gpu_handle);
 		}
 
 		m_ready_render_text_textures.clear();

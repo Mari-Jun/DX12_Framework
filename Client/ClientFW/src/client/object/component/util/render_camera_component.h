@@ -21,6 +21,7 @@ namespace client_fw
 		RenderCameraComponent(const std::string& name = "render camera component");
 		virtual ~RenderCameraComponent() = default;
 
+		virtual void Shutdown() override;
 		virtual void UpdateViewMatrix() override;
 
 	protected:

@@ -3,14 +3,22 @@
 namespace client_fw
 {
 #define START_INDEX_EXTERNAL_TEXTURE			0			//Texture 15000개 까지 지원
+#define END_INDEX_EXTERNAL_TEXTURE				15000
+
 #define START_INDEX_RENDER_TEXTURE				15000		//Camera들 (Render, Shadow) Texture 3000개 까지 지원
+#define END_INDEX_RENDER_TEXTURE				18000
 
 #define START_INDEX_RENDER_TEXT_TEXTURE			18000		//Text Texture를 2000개 까지 지원
 #define END_INDEX_RENDER_TEXT_TEXTURE			20000		
 
 #define START_INDEX_RENDER_CUBE_MAP_TEXTURE		20000		//Render Cube Map Texture를 2000개까지 지원
+#define END_INDEX_RENDER_CUBE_MAP_TEXTURE		22000
+
 #define START_INDEX_EXTERNAL_CUBE_MAP_TEXTURE	22000		//External_Cube Map Texture를 500개까지 지원
+#define END_INDEX_EXTERNAL_CUBE_MAP_TEXTURE		22500
+
 #define START_INDEX_RENDER_ARRAY_TEXTURE		22500		//Render Cube Map Texture를 500개까지 지원
+#define END_INDEX_RENDER_ARRAY_TEXTURE			23000
 
 #define START_INDEX_IMGUI						23000
 #define START_INDEX_VIEWPORT_TEXTURE			23003
@@ -61,6 +69,25 @@ namespace client_fw
 		void UpdateMaterialResource(ID3D12Device* device);
 
 		void UpdateTextureResource(ID3D12Device* device, ID3D12GraphicsCommandList* command_list);
+		template<class TextureType>
+		void UpdateTextureResource(std::array<bool, TEXTURE_RESOURCE_COUNT>::iterator iter, const SPtr<TextureType>& texture,
+			std::function<void(int, const SPtr<TextureType>, CD3DX12_CPU_DESCRIPTOR_HANDLE, CD3DX12_GPU_DESCRIPTOR_HANDLE)> function)
+		{
+			UINT index = static_cast<UINT>(std::distance(m_texture_usage.begin(), iter));
+
+			CD3DX12_CPU_DESCRIPTOR_HANDLE cpu_handle(m_texture_desciptor_heap->GetCPUDescriptorHandleForHeapStart(),
+				index, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
+			CD3DX12_GPU_DESCRIPTOR_HANDLE gpu_handle(m_texture_desciptor_heap->GetGPUDescriptorHandleForHeapStart(),
+				index, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
+
+			function(index, texture, cpu_handle, gpu_handle);
+
+			texture->RegisterShutdownFunction([this, index]() {
+				m_texture_usage[index] = false;
+				});
+			m_texture_usage[index] = true;
+		}
+
 		void UpdateExternalTextureResource(ID3D12Device* device, ID3D12GraphicsCommandList* command_list);
 		void UpdateExternalCubeMapTextureResource(ID3D12Device* device, ID3D12GraphicsCommandList* command_list);
 		void UpdateRenderTextureResource(ID3D12Device* device, ID3D12GraphicsCommandList* command_list);
@@ -91,9 +118,6 @@ namespace client_fw
 		std::array<bool, TEXTURE_RESOURCE_COUNT> m_texture_usage;
 		UINT m_num_of_external_texture_data = START_INDEX_EXTERNAL_TEXTURE;
 		UINT m_num_of_external_cube_map_texture_data = START_INDEX_EXTERNAL_CUBE_MAP_TEXTURE;
-		UINT m_num_of_render_texture_data = START_INDEX_RENDER_TEXTURE;
-		UINT m_num_of_render_cube_map_texture_data = START_INDEX_RENDER_CUBE_MAP_TEXTURE;
-		UINT m_num_of_render_array_texture_data = START_INDEX_RENDER_ARRAY_TEXTURE;
 		ComPtr<ID3D12DescriptorHeap> m_texture_desciptor_heap;
 
 	public:

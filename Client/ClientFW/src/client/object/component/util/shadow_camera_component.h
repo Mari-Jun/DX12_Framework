@@ -11,6 +11,8 @@ namespace client_fw
         ShadowCameraComponent(const std::string& name = "shadow camera component");
         virtual ~ShadowCameraComponent() = default;
 
+        virtual void Shutdown() override;
+
     private:
         SPtr<Shadow2DTexture> m_shadow_texture;
         SPtr<Shadow2DTexture> m_static_shadow_texture;

@@ -2,6 +2,7 @@
 #include "client/object/component/util/shadow_cascade_camera_component.h"
 #include "client/object/component/util/render_camera_component.h"
 #include "client/object/actor/core/actor.h"
+#include "client/asset/texture/texture.h"
 
 namespace client_fw
 {
@@ -15,6 +16,13 @@ namespace client_fw
 	{
 		bool ret = CameraComponent::Initialize();
 		return true;
+	}
+
+	void ShadowCascadeCameraComponent::Shutdown()
+	{
+		if (m_shadow_array_texture != nullptr)
+			m_shadow_array_texture->Shutdown();
+		CameraComponent::Shutdown();
 	}
 
 	void ShadowCascadeCameraComponent::Update(float delta_time)
