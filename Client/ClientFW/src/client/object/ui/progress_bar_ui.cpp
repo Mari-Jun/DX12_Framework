@@ -43,11 +43,6 @@ namespace client_fw
 			LOG_WARN("Could not find texture : {0}", path);
 	}
 
-	void ProgressBarUI::SetBackgroundTexture(const SPtr<Texture>& texture)
-	{
-		m_background_texture->SetTexture(texture);
-	}
-
 	void ProgressBarUI::SetFillTexture(const std::string& path)
 	{
 		const auto& texture = AssetStore::LoadTexture(path);
@@ -55,11 +50,6 @@ namespace client_fw
 			SetFillTexture(texture);
 		else
 			LOG_WARN("Could not find texture : {0}", path);
-	}
-
-	void ProgressBarUI::SetFillTexture(const SPtr<Texture>& texture)
-	{
-		m_fill_texture->SetTexture(texture);
 	}
 
 	void ProgressBarUI::SetPercent(float percent)

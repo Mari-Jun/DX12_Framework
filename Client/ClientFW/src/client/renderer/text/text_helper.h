@@ -55,8 +55,8 @@ namespace client_fw
 	{
 	public:
 		TextInfo(const IVec2& size, const Vec4& color, const TextFormat& format, const std::wstring& text = L"");
-		~TextInfo();
 
+		void Shutdown();
 		void RegisterToTextManager();
 
 	private:

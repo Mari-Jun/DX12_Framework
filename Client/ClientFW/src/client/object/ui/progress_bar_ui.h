@@ -20,13 +20,26 @@ namespace client_fw
 		virtual void SetPosition(const Vec2& position) override;
 		virtual void SetSize(const Vec2& size) override;
 
-		const SPtr<UITexture> GetBackgroundTexture() const { return m_background_texture; }
-		const SPtr<UITexture> GetFillTexture() const { return m_fill_texture; }
-
+		const Vec4& GetBackgroundTextureBrushColor() const { return m_background_texture->GetBrushColor(); }
+		const Vec2& GetBackgroundTextureCoordinate() const { return m_background_texture->GetCoordinate(); }
+		const Vec2& GetBackgroundTextureTilling() const { return m_background_texture->GetTilling(); }
+		const SPtr<Texture> GetBackgroundTexture() const { return m_background_texture->GetTexture(); }
+		void SetBackgroundTextureBrushColor(const Vec4& brush_color) const { m_background_texture->SetBrushColor(brush_color); }
+		void SetBackgroundTextureCoordinate(const Vec2& coordinate) const { m_background_texture->SetCoordinate(coordinate); }
+		void SetBackgroundTextureTilling(const Vec2& tilling) const { m_background_texture->SetTilling(tilling); }
+		void SetBackgroundTexture(const SPtr<Texture>& texture) { m_background_texture->SetTexture(texture); }
 		void SetBackgroundTexture(const std::string& path);
-		void SetBackgroundTexture(const SPtr<Texture>& texture);
+
+		const Vec4& GetFillTextureBrushColor() const { return m_fill_texture->GetBrushColor(); }
+		const Vec2& GetFillTextureCoordinate() const { return m_fill_texture->GetCoordinate(); }
+		const Vec2& GetFillTextureTilling() const { return m_fill_texture->GetTilling(); }
+		const SPtr<Texture> GetFillTexture() const { return m_fill_texture->GetTexture(); }
+		void SetFillTextureBrushColor(const Vec4& brush_color) const { m_fill_texture->SetBrushColor(brush_color); }
+		void SetFillTextureCoordinate(const Vec2& coordinate) const { m_fill_texture->SetCoordinate(coordinate); }
+		void SetFillTextureTilling(const Vec2& tilling) const { m_fill_texture->SetTilling(tilling); }
+		void SetFillTexture(const SPtr<Texture>& texture) { m_fill_texture->SetTexture(texture); }
 		void SetFillTexture(const std::string& path);
-		void SetFillTexture(const SPtr<Texture>& texture);
+
 		float GetPercent() const { return m_percent; }
 		void SetPercent(float percent);
 

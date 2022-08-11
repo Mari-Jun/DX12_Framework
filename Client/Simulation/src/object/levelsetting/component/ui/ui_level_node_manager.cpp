@@ -4,6 +4,8 @@
 #include <client/util/file_dialog.h>
 #include <client/object/ui/button_ui.h>
 #include <client/object/ui/text_ui.h>
+#include <client/object/ui/image_ui.h>
+#include <client/object/ui/progress_bar_ui.h>
 
 #include "object/level/component/ui/ui_level.h"
 #include "object/levelsetting/component/ui/ui_level_node_manager.h"
@@ -28,6 +30,10 @@ namespace simulation
 			Vec2 size = button_ui->GetSize();
 			if (ImGui::DragFloat2("Size", (float*)&size, 0.5f, 0.0f, FLT_MAX, "%.4f", ImGuiSliderFlags_AlwaysClamp))
 				button_ui->SetSize(size);
+
+			Vec2 pivot = button_ui->GetPivot();
+			if (ImGui::DragFloat2("Pivot", (float*)&pivot, 0.01f, 0.0f, 1.0f, "%.4f", ImGuiSliderFlags_AlwaysClamp))
+				button_ui->SetPivot(pivot);
 
 			const auto& buttons = button_ui->GetButtonTextures();
 
@@ -95,6 +101,10 @@ namespace simulation
 			Vec2 size = text_ui->GetSize();
 			if (ImGui::DragFloat2("Size", (float*)&size, 0.5f, 1.0f, 4096.0f, "%.4f", ImGuiSliderFlags_AlwaysClamp))
 				text_ui->SetSize(size);
+
+			Vec2 pivot = text_ui->GetPivot();
+			if (ImGui::DragFloat2("Pivot", (float*)&pivot, 0.01f, 0.0f, 1.0f, "%.4f", ImGuiSliderFlags_AlwaysClamp))
+				text_ui->SetPivot(pivot);
 
 			std::string text = text_ui->GetText();
 			if (ImGui::InputText("Text", &text))
@@ -183,6 +193,149 @@ namespace simulation
 
 		RegisterSettingHeaderNode("Text UI", {
 			{ "text", TextUIFunc },
+			});
+
+		static auto ImageUIFunc = [](const SPtr<UILevel>& level)
+		{
+			const auto& image_ui = level->GetUILayer()->GetImage();
+
+			Vec2 pos = image_ui->GetPosition();
+			if (ImGui::DragFloat2("Position", (float*)&pos, 0.5f, -FLT_MAX, FLT_MAX, "%.4f"))
+				image_ui->SetPosition(pos);
+
+			Vec2 size = image_ui->GetSize();
+			if (ImGui::DragFloat2("Size", (float*)&size, 0.5f, 0.0f, FLT_MAX, "%.4f", ImGuiSliderFlags_AlwaysClamp))
+				image_ui->SetSize(size);
+
+			Vec2 pivot = image_ui->GetPivot();
+			if (ImGui::DragFloat2("Pivot", (float*)&pivot, 0.01f, 0.0f, 1.0f, "%.4f", ImGuiSliderFlags_AlwaysClamp))
+				image_ui->SetPivot(pivot);
+
+			const auto& texture = image_ui->GetTexture();
+			std::string path;
+			if (texture != nullptr)
+				path = texture->GetPath();
+
+			ImGui::BulletText("Texture path : ");
+			ImGui::SameLine();
+			ImGui::Text(path.c_str());
+
+			if (ImGui::Button("Open file dialog"))
+			{
+				path = FileDialog::OpenFile(L"texture file (.png .dds .bmp .jpg)\0*.png;*.dds;*.bmp;*.jpg");
+				if (path.empty() == false)
+					image_ui->SetTexture(path);
+			}
+
+			Vec4 brush_color = image_ui->GetTextureBrushColor();
+			if (ImGui::ColorEdit4("Brush Color", (float*)&brush_color))
+				image_ui->SetTextureBrushColor(brush_color);
+
+			Vec2 coordinate = image_ui->GetTextureCoordinate();
+			if (ImGui::DragFloat2("Offset", (float*)&coordinate, 0.01f, -FLT_MAX, FLT_MAX, "%.4f"))
+				image_ui->SetTextureCoordinate(coordinate);
+
+			Vec2 tilling = image_ui->GetTextureTilling();
+			if (ImGui::DragFloat2("Tilling", (float*)&tilling, 0.01f, 0.0f, FLT_MAX, "%.4f", ImGuiSliderFlags_AlwaysClamp))
+				image_ui->SetTextureTilling(tilling);
+		};
+
+		RegisterSettingHeaderNode("Image UI", {
+			{ "image", ImageUIFunc },
+			});
+
+		static auto ProgressBarUIFunc = [](const SPtr<UILevel>& level)
+		{
+			const auto& progress_bar_ui = level->GetUILayer()->GetProgressBar();
+
+			Vec2 pos = progress_bar_ui->GetPosition();
+			if (ImGui::DragFloat2("Position", (float*)&pos, 0.5f, -FLT_MAX, FLT_MAX, "%.4f"))
+				progress_bar_ui->SetPosition(pos);
+
+			Vec2 size = progress_bar_ui->GetSize();
+			if (ImGui::DragFloat2("Size", (float*)&size, 0.5f, 0.0f, FLT_MAX, "%.4f", ImGuiSliderFlags_AlwaysClamp))
+				progress_bar_ui->SetSize(size);
+
+			Vec2 pivot = progress_bar_ui->GetPivot();
+			if (ImGui::DragFloat2("Pivot", (float*)&pivot, 0.01f, 0.0f, 1.0f, "%.4f", ImGuiSliderFlags_AlwaysClamp))
+				progress_bar_ui->SetPivot(pivot);
+
+			float percent = progress_bar_ui->GetPercent();
+			percent *= 100.0f;
+			if (ImGui::DragFloat("Percent", &percent, 0.1f, 0.0f, 100.f, "%.4f", ImGuiSliderFlags_AlwaysClamp))
+				progress_bar_ui->SetPercent(percent * 0.01f);
+
+			if (ImGui::TreeNodeEx("Background texture", ImGuiTreeNodeFlags_DefaultOpen))
+			{
+				const auto& texture = progress_bar_ui->GetBackgroundTexture();
+				std::string path;
+				if (texture != nullptr)
+					path = texture->GetPath();
+
+				ImGui::BulletText("Texture path : ");
+				ImGui::SameLine();
+				ImGui::Text(path.c_str());
+
+				if (ImGui::Button("Open file dialog"))
+				{
+					path = FileDialog::OpenFile(L"texture file (.png .dds .bmp .jpg)\0*.png;*.dds;*.bmp;*.jpg");
+					if (path.empty() == false)
+						progress_bar_ui->SetBackgroundTexture(path);
+				}
+
+				Vec4 brush_color = progress_bar_ui->GetBackgroundTextureBrushColor();
+				if (ImGui::ColorEdit4("Brush Color", (float*)&brush_color))
+					progress_bar_ui->SetBackgroundTextureBrushColor(brush_color);
+
+				Vec2 coordinate = progress_bar_ui->GetBackgroundTextureCoordinate();
+				if (ImGui::DragFloat2("Offset", (float*)&coordinate, 0.01f, -FLT_MAX, FLT_MAX, "%.4f"))
+					progress_bar_ui->SetBackgroundTextureCoordinate(coordinate);
+
+				Vec2 tilling = progress_bar_ui->GetBackgroundTextureTilling();
+				if (ImGui::DragFloat2("Tilling", (float*)&tilling, 0.01f, 0.0f, FLT_MAX, "%.4f", ImGuiSliderFlags_AlwaysClamp))
+					progress_bar_ui->SetBackgroundTextureTilling(tilling);
+
+				ImGui::TreePop();
+				ImGui::Separator();
+			}
+
+			if (ImGui::TreeNodeEx("Fill texture", ImGuiTreeNodeFlags_DefaultOpen))
+			{
+				const auto& texture = progress_bar_ui->GetFillTexture();
+				std::string path;
+				if (texture != nullptr)
+					path = texture->GetPath();
+
+				ImGui::BulletText("Texture path : ");
+				ImGui::SameLine();
+				ImGui::Text(path.c_str());
+
+				if (ImGui::Button("Open file dialog"))
+				{
+					path = FileDialog::OpenFile(L"texture file (.png .dds .bmp .jpg)\0*.png;*.dds;*.bmp;*.jpg");
+					if (path.empty() == false)
+						progress_bar_ui->SetFillTexture(path);
+				}
+
+				Vec4 brush_color = progress_bar_ui->GetFillTextureBrushColor();
+				if (ImGui::ColorEdit4("Brush Color", (float*)&brush_color))
+					progress_bar_ui->SetFillTextureBrushColor(brush_color);
+
+				Vec2 coordinate = progress_bar_ui->GetFillTextureCoordinate();
+				if (ImGui::DragFloat2("Offset", (float*)&coordinate, 0.01f, -FLT_MAX, FLT_MAX, "%.4f"))
+					progress_bar_ui->SetFillTextureCoordinate(coordinate);
+
+				Vec2 tilling = progress_bar_ui->GetFillTextureTilling();
+				if (ImGui::DragFloat2("Tilling", (float*)&tilling, 0.01f, 0.0f, FLT_MAX, "%.4f", ImGuiSliderFlags_AlwaysClamp))
+					progress_bar_ui->SetFillTextureTilling(tilling);
+
+				ImGui::TreePop();
+				ImGui::Separator();
+			}
+		};
+
+		RegisterSettingHeaderNode("Progress bar UI", {
+			{ "progress bar", ProgressBarUIFunc },
 			});
 	}
 }

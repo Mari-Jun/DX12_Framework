@@ -2,6 +2,8 @@
 #include <include/dx12_shader_fw.h>
 #include <client/object/ui/button_ui.h>
 #include <client/object/ui/text_ui.h>
+#include <client/object/ui/image_ui.h>
+#include <client/object/ui/progress_bar_ui.h>
 
 #include "object/ui/ui_level_ui_layer.h"
 
@@ -12,6 +14,8 @@ namespace simulation
 	{
 		m_button = CreateSPtr<ButtonUI>("button ui", Vec2(100.0f, 100.0f));
 		m_text = CreateSPtr<TextUI>("text ui", Vec2(200.0f, 25.f), L"hello world");
+		m_image = CreateSPtr<ImageUI>("image ui", Vec2(200.f, 200.f));
+		m_progress_bar = CreateSPtr<ProgressBarUI>("progress bar ui", Vec2(256.f, 32.f));
 	}
 
 	bool UILevelUILayer::Initialize()
@@ -30,6 +34,15 @@ namespace simulation
 		m_text->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER);
 		m_text->SetFontName(L"배달의민족 주아");
 		m_text->SetFontSize(20);
+
+		ret &= RegisterUserInterface(m_image);
+		m_image->SetPosition(Vec2(200.0f, 0.0f));
+		m_image->SetPivot(Vec2(0.0f, 0.0f));
+
+		ret &= RegisterUserInterface(m_progress_bar);
+		m_progress_bar->SetPosition(Vec2(100.f, 300.f));
+		m_progress_bar->SetPivot(Vec2(0.0f, 0.0f));
+		m_progress_bar->SetPercent(0.5f);
 
 		return ret;
 	}

@@ -64,7 +64,7 @@ namespace client_fw
 		m_text_texture = CreateSPtr<RenderTextTexture>(size);
 	}
 
-	TextInfo::~TextInfo()
+	void TextInfo::Shutdown()
 	{
 		m_text_texture->Shutdown();
 	}

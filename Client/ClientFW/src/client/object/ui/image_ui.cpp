@@ -37,9 +37,4 @@ namespace client_fw
 		else
 			LOG_WARN("Could not find texture : {0}", path);
 	}
-
-	void ImageUI::SetTexture(const SPtr<Texture>& texture)
-	{
-		m_normal_texture->SetTexture(texture);
-	}
 }

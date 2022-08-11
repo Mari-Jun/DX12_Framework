@@ -30,6 +30,11 @@ namespace client_fw
 		return true;
 	}
 
+	void TextUI::Shutdown()
+	{
+		m_text_info->Shutdown();
+	}
+
 	void TextUI::Update(float delta_time)
 	{
 		if (m_is_need_update)
@@ -48,6 +53,7 @@ namespace client_fw
 	void TextUI::SetSize(const Vec2& size)
 	{
 		UserInterface::SetSize(size);
+		m_text_info->Shutdown();
 		m_text_info = CreateSPtr<TextInfo>(IVec2(size), GetColor(),
 			m_text_info->GetTextFormat(), m_text_info->GetText());
 		m_text_texture->SetTexture(m_text_info->GetTextTexture());

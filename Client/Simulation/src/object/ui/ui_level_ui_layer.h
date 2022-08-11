@@ -26,10 +26,14 @@ namespace simulation
 	private:
 		SPtr<ButtonUI> m_button;
 		SPtr<TextUI> m_text;
+		SPtr<ImageUI> m_image;
+		SPtr<ProgressBarUI> m_progress_bar;
 
 	public:
 		const SPtr<ButtonUI>& GetButton() const { return m_button; }
 		const SPtr<TextUI>& GetText() const { return m_text; }
+		const SPtr<ImageUI>& GetImage() const { return m_image; }
+		const SPtr<ProgressBarUI>& GetProgressBar() const { return m_progress_bar; }
 	};
 }
 

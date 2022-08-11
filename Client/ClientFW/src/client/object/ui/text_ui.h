@@ -13,6 +13,7 @@ namespace client_fw
             const std::wstring& text, const Vec4& color, size_t num_of_visible_texture = 1);
 
         virtual bool Initialize() override;
+        virtual void Shutdown() override;
         virtual void Update(float delta_time) override;
 
     protected:
