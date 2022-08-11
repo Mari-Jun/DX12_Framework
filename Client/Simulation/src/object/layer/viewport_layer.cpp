@@ -55,7 +55,7 @@ namespace simulation
 			{
 				if (ImGui::IsWindowHovered())
 				{
-					if (Input::IsKeyPressed(eKey::kLButton))
+					if (Input::IsKeyPressed(eKey::kLButton) && Input::GetInputMode() == eInputMode::kEditor)
 						Input::SetInputMode(eInputMode::kGameOnly);
 					if (Input::IsKeyPressed(eKey::kEscape))
 						Input::SetInputMode(eInputMode::kEditor);

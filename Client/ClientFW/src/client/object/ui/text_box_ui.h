@@ -27,6 +27,13 @@ namespace client_fw
 	public:
 		virtual void SetPosition(const Vec2& position) override;
 		virtual void SetSize(const Vec2& size) override;
+		const Vec4& GetBackgroundTextureBrushColor() const { return m_background_texture->GetBrushColor(); }
+		const Vec2& GetBackgroundTextureCoordinate() const { return m_background_texture->GetCoordinate(); }
+		const Vec2& GetBackgroundTextureTilling() const { return m_background_texture->GetTilling(); }
+		const SPtr<Texture>& GetBackgroundTexture() const { return m_background_texture->GetTexture(); }
+		void SetBackgroundTextureBrushColor(const Vec4& brush_color) const { m_background_texture->SetBrushColor(brush_color); }
+		void SetBackgroundTextureCoordinate(const Vec2& coordinate) const { m_background_texture->SetCoordinate(coordinate); }
+		void SetBackgroundTextureTilling(const Vec2& tilling) const { m_background_texture->SetTilling(tilling); }
 		void SetBackgroundTexture(const std::string& path);
 		void SetBackgroundTexture(const SPtr<Texture>& texture);
 
