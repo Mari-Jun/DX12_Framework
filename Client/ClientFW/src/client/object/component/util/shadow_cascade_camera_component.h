@@ -23,9 +23,9 @@ namespace client_fw
 		void UpdateCascadeMatrix();
 
 	private:
-		float m_max_cascade_far_z = 10000.0f;
-		float m_cascade_far_z = 10000.0f;
-		std::array<float, s_max_cascade_level> m_cascade_level_ratio = { 0.2f, 0.5f, 1.0f };
+		float m_max_cascade_far_z = 5000.f;
+		float m_cascade_far_z = 5000.f;
+		std::array<float, s_max_cascade_level> m_cascade_level_ratio = { 0.1f, 0.5f, 1.0f };
 		std::array<float, s_max_cascade_level> m_cascade_x_offset = { 0.0f, 0.0f, 0.0f };
 		std::array<float, s_max_cascade_level> m_cascade_y_offset = { 0.0f, 0.0f, 0.0f };
 		std::array<float, s_max_cascade_level> m_cascade_scale = { 1.0f, 1.0f, 1.0f };
