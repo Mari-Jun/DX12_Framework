@@ -55,6 +55,34 @@ namespace simulation
         MultiplePointLightLevelRuntimeNodeManager();
         virtual ~MultiplePointLightLevelRuntimeNodeManager() = default;
     };
+
+    class MultipleSpotLightLevelInitNodeManager : public LevelNodeManager<MultipleSpotLightLevel>
+    {
+    public:
+        MultipleSpotLightLevelInitNodeManager();
+        virtual ~MultipleSpotLightLevelInitNodeManager() = default;
+
+    private:
+        INT m_num_of_spot_lights = 50;
+        INT m_num_of_track = 1;
+        float m_offset = 500.f;
+        bool m_use_shadow = false;
+        bool m_update_intensity = false;
+
+    public:
+        INT GetNumOfSpotLights() const { return m_num_of_spot_lights; }
+        INT GetNumOfTrack() const { return m_num_of_track; }
+        float GetOffset() const { return m_offset; }
+        bool IsUseShadow() const { return m_use_shadow; }
+        bool IsUpdateIntensity() const { return m_update_intensity; }
+    };
+
+    class MultipleSpotLightLevelRuntimeNodeManager : public LevelNodeManager<MultipleSpotLightLevel>
+    {
+    public:
+        MultipleSpotLightLevelRuntimeNodeManager();
+        virtual ~MultipleSpotLightLevelRuntimeNodeManager() = default;
+    };
 }
 
 

@@ -369,4 +369,146 @@ namespace simulation
 
 		return visual_octrees;
 	}
+
+	UPtr<MultipleSpotLightLevelInitNodeManager> MultipleSpotLightLevel::s_init_node_manager = nullptr;
+	UPtr<MultipleSpotLightLevelRuntimeNodeManager> MultipleSpotLightLevel::s_runtime_node_manager = nullptr;
+
+	MultipleSpotLightLevel::MultipleSpotLightLevel()
+		: SimulationLevel("multiple spot light level")
+	{
+		m_game_mode = CreateUPtr<ThirdGameMode>();
+		if (s_init_node_manager == nullptr)
+			s_init_node_manager = CreateUPtr<MultipleSpotLightLevelInitNodeManager>();
+		if (s_runtime_node_manager == nullptr)
+			s_runtime_node_manager = CreateUPtr<MultipleSpotLightLevelRuntimeNodeManager>();
+	}
+
+	bool MultipleSpotLightLevel::Initialize()
+	{
+		bool ret = SimulationLevel::Initialize();
+
+		const bool use_shadow = s_init_node_manager->IsUseShadow();
+		const bool update_intensity = s_init_node_manager->IsUpdateIntensity();
+		const float offset = s_init_node_manager->GetOffset();
+		const float track_offset = offset * 2.0f;
+		const int num_of_spot_lights = s_init_node_manager->GetNumOfSpotLights();
+		const int num_of_track = s_init_node_manager->GetNumOfTrack();
+
+		m_spot_lights.reserve(num_of_spot_lights * num_of_track * num_of_track);
+
+		const float track_start_point = static_cast<float>(num_of_track - 1) * -0.5f * track_offset;
+		for (int x = 0; x < num_of_track; ++x)
+		{
+			const float new_x = track_start_point + x * track_offset;
+			for (int y = 0; y < num_of_track; ++y)
+			{
+				const float new_y = track_start_point + y * track_offset;
+
+				for (int z = 0; z < num_of_spot_lights; ++z)
+				{
+					const float new_z = z * offset * 0.5f;
+					auto spot_light = CreateSPtr<CubeSpotLight>(update_intensity);
+
+					for (const auto& light : spot_light->GetSpotLights())
+					{
+						light->SetAttenuationRadius(offset);
+						if (use_shadow)
+						{
+							light->SetShadowTextureSize(512);
+						}
+						else
+						{
+							light->DisableShadow();
+						}
+					}
+
+					spot_light->SetPosition(Vec3(new_x, new_y, new_z));
+					SpawnActor(spot_light);
+					m_spot_lights.emplace_back(spot_light);
+
+					auto plane = CreateSPtr<StaticMeshActor>(eMobilityState::kStatic, "../Contents/cube.obj");
+					SpawnActor(plane);
+					plane->SetPosition(Vec3(new_x, new_y - offset * 0.5f, new_z));
+					plane->SetRotation(0.0f, 0.0f, math::ToRadian(0.0f));
+					plane->SetScale(Vec3(offset / 100.f, offset / 10000.f, offset / 100.f));
+
+					plane = CreateSPtr<StaticMeshActor>(eMobilityState::kStatic, "../Contents/cube.obj");
+					SpawnActor(plane);
+					plane->SetPosition(Vec3(new_x + offset * 0.5f, new_y, new_z));
+					plane->SetRotation(0.0f, 0.0f, math::ToRadian(90.0f));
+					plane->SetScale(Vec3(offset / 100.f, offset / 10000.f, offset / 100.f));
+
+					plane = CreateSPtr<StaticMeshActor>(eMobilityState::kStatic, "../Contents/cube.obj");
+					SpawnActor(plane);
+					plane->SetPosition(Vec3(new_x, new_y + offset * 0.5f, new_z));
+					plane->SetRotation(0.0f, 0.0f, math::ToRadian(180.0f));
+					plane->SetScale(Vec3(offset / 100.f, offset / 10000.f, offset / 100.f));
+
+					plane = CreateSPtr<StaticMeshActor>(eMobilityState::kStatic, "../Contents/cube.obj");
+					SpawnActor(plane);
+					plane->SetPosition(Vec3(new_x - offset * 0.5f, new_y, new_z));
+					plane->SetRotation(0.0f, 0.0f, math::ToRadian(270.0f));
+					plane->SetScale(Vec3(offset / 100.f, offset / 10000.f, offset / 100.f));
+				}
+			}
+		}
+
+		const float new_x = 0.0f;
+		const float new_y = 0.0f;
+
+		
+
+		GetGameMode()->GetDefaultPawn()->SetPosition(Vec3(0.f, 0.f, -offset));
+
+		return ret;
+	}
+
+	void MultipleSpotLightLevel::Shutdown()
+	{
+	}
+
+	void MultipleSpotLightLevel::Update(float delta_time)
+	{
+	}
+
+	void MultipleSpotLightLevel::SetLevelInitNodeOwner()
+	{
+		s_init_node_manager->SetOwner(std::static_pointer_cast<MultipleSpotLightLevel>(shared_from_this()));
+	}
+
+	void MultipleSpotLightLevel::ExecuteLevelInitNodes()
+	{
+		s_init_node_manager->ExecuteLevelSettingNodes();
+	}
+
+	void MultipleSpotLightLevel::SetLevelRuntimeNodeOwner()
+	{
+		s_runtime_node_manager->SetOwner(std::static_pointer_cast<MultipleSpotLightLevel>(shared_from_this()));
+	}
+
+	void MultipleSpotLightLevel::ExecuteLevelRuntimeNodes()
+	{
+		s_runtime_node_manager->ExecuteLevelSettingNodes();
+	}
+
+	std::vector<SPtr<VisualOctree>> MultipleSpotLightLevel::CreateVisualOctrees() const
+	{
+		const float offset = s_init_node_manager->GetOffset();
+		const int num_of_point_lights = std::max(s_init_node_manager->GetNumOfSpotLights(), s_init_node_manager->GetNumOfTrack());
+		float width = offset * num_of_point_lights;
+
+		const float octree_offset = offset * 200.f;
+		const int num_of_line = static_cast<int>(ceilf(width / octree_offset));
+	
+		std::vector<SPtr<VisualOctree>> visual_octrees;
+		for (int z = 0; z < num_of_line; ++z)
+		{
+			const float new_z = width * 0.5f + z * octree_offset;
+
+			LOG_INFO(Vec3(new_x, 0.f, new_z));
+			visual_octrees.emplace_back(CreateSPtr<VisualOctree>(width, Vec3(0.0f, 0.0f, new_z), 3));
+		}
+
+		return visual_octrees;
+	}
 }

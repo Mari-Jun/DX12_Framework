@@ -117,4 +117,50 @@ namespace simulation
 			   { "light count", PointLightsFunc }
 			});
 	}
+
+	MultipleSpotLightLevelInitNodeManager::MultipleSpotLightLevelInitNodeManager()
+	{
+		static auto SpotLightsFunc = [this](const SPtr<MultipleSpotLightLevel>& level)
+		{
+			ImGui::Checkbox("enable shadow", &m_use_shadow);
+			ImGuiHelper::ShowInformationSameLine({ u8"Shadow를 사용하게 될 경우 소환 가능한 최대 Light수가 줄어듭니다." });
+
+			ImGui::Checkbox("update intensity", &m_update_intensity);
+			ImGuiHelper::ShowInformationSameLine({ u8"Update Intensity를 사용하게 될 경우 프레임이 떨어질 가능성이 높습니다." });
+
+			const int max_point_lights = m_use_shadow ? 30 : 100;
+			const int max_track = m_use_shadow ? 2 : 5;
+			m_offset = 300.f;
+			if (m_use_shadow)
+			{
+				m_offset = 500.f;
+				m_num_of_spot_lights = std::min(m_num_of_spot_lights, 30);
+				m_num_of_track = std::min(m_num_of_track, 2);
+			}
+
+			ImGui::DragInt("num of spot lights in a row", &m_num_of_spot_lights, 1.0f, 1, max_point_lights, "%d", ImGuiSliderFlags_AlwaysClamp);
+			ImGuiHelper::ShowInformation({ u8"Spot light의 수. (소환되는 light의 수는 X6)" });
+
+			ImGui::DragInt("num of track", &m_num_of_track, 1.0f, 1, max_track, "%d", ImGuiSliderFlags_AlwaysClamp);
+			ImGuiHelper::ShowInformationSameLine({ u8"트랙의 수. (값의 제곱)" });
+		};
+
+		RegisterSettingHeaderNode("Spot lights setting", {
+			{ "lights setting", SpotLightsFunc }
+			});
+	}
+
+	MultipleSpotLightLevelRuntimeNodeManager::MultipleSpotLightLevelRuntimeNodeManager()
+	{
+		static auto SpotLightsFunc = [this](const SPtr<MultipleSpotLightLevel>& level)
+		{
+			const auto& spot_lights = level->GetSpotLights();
+
+			ImGui::BulletText("num of spot light : %d", spot_lights.size() * 4);
+		};
+
+		RegisterSettingHeaderNode("Spot lights", {
+			   { "light count", SpotLightsFunc }
+			});
+	}
 }

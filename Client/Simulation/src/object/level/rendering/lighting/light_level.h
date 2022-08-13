@@ -83,6 +83,40 @@ namespace simulation
 		static UPtr<MultiplePointLightLevelInitNodeManager> s_init_node_manager;
 		static UPtr<MultiplePointLightLevelRuntimeNodeManager> s_runtime_node_manager;
 	};
+
+	class CubeSpotLight;
+	class MultipleSpotLightLevelInitNodeManager;
+	class MultipleSpotLightLevelRuntimeNodeManager;
+
+	class MultipleSpotLightLevel : public SimulationLevel
+	{
+	public:
+		MultipleSpotLightLevel();
+		virtual ~MultipleSpotLightLevel() = default;
+
+		virtual bool Initialize() override;
+		virtual void Shutdown() override;
+
+		virtual void Update(float delta_time) override;
+
+		virtual void SetLevelInitNodeOwner() override;
+		virtual void ExecuteLevelInitNodes() override;
+
+		virtual void SetLevelRuntimeNodeOwner() override;
+		virtual void ExecuteLevelRuntimeNodes() override;
+
+	private:
+		std::vector<SPtr<CubeSpotLight>> m_spot_lights;
+
+	public:
+		const std::vector<SPtr<CubeSpotLight>>& GetSpotLights() const { return m_spot_lights; }
+
+		virtual std::vector<SPtr<VisualOctree>> CreateVisualOctrees() const override;
+
+	private:
+		static UPtr<MultipleSpotLightLevelInitNodeManager> s_init_node_manager;
+		static UPtr<MultipleSpotLightLevelRuntimeNodeManager> s_runtime_node_manager;
+	};
 }
 
 

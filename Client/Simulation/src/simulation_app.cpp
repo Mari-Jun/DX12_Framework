@@ -144,7 +144,14 @@ namespace simulation
 				});
 			m_select_level_layer->RegisterLevel<MultiplePointLightLevel>("Rendering/Lighting", {
 				u8"여러개의 Point light를 소환할 수 있는 레벨입니다.",
+				u8"Point light는 움직이지 않는 Static객체입니다.",
+				u8"그림자 활성화/비활성화, 조명 세기 가변/불변 선택 가능합니다.",
 				u8"프로그램의 Lighting 성능을 확인할 수 있습니다."
+				});
+			m_select_level_layer->RegisterLevel<MultipleSpotLightLevel>("Rendering/Lighting", {
+				u8"여러개의 Spot light를 소환할 수 있는 레벨입니다.",
+				u8"Spot light는 움직이는 Movable객체입니다.",
+				u8"그림자 활성화/비활성화, 조명 세기 가변/불변 선택 가능합니다."
 				});
 
 			m_select_level_layer->RegisterLevel<BlurLevel>("Rendering/PostProcessing",{
