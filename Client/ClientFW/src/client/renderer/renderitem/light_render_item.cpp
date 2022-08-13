@@ -37,7 +37,7 @@ namespace client_fw
 		{
 			if (light->IsVisible())
 			{
-				const auto& transpos_matrix = mat4::Transpose(light->GetWorldMatrix());
+				const auto& transpos_matrix = light->GetWorldTransposeMatrix();
 
 				m_local_light_instance_data[level_type].push_back(
 					RSLocalLightInstanceData{ transpos_matrix, transpos_matrix,

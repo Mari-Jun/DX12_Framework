@@ -87,7 +87,7 @@ namespace client_fw
 
 #ifdef __USE_LEVEL_CPU_TIME__
 			l_end = clock();
-			LOG_TRACE("Level Cpu Time : {0}", float(l_end - l_start));
+			std::cout << "Level Cpu Time : " << float(l_end - l_start) << std::endl;
 #endif
 	
 

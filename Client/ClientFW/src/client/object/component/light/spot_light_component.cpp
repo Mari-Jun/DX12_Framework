@@ -42,6 +42,8 @@ namespace client_fw
 			m_world_matrix *= mat4::CreateRotationFromQuaternion(m_world_rotation);
 			m_world_matrix *= mat4::CreateTranslation(m_world_position);
 
+			m_world_transpose_matrix = mat4::Transpose(GetWorldMatrix());
+
 			UpdateOrientedBox();
 
 			m_is_updated_world_matrix = true;

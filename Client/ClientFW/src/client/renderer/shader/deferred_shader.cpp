@@ -31,7 +31,7 @@ namespace client_fw
 		{
 			const auto& light_manager = LightManager::GetLightManager();
 			if (light_manager.GetDirectionalLights().empty())
-				command_list->SetPipelineState(m_pipeline_states.at(level_type)[0].Get());
+				command_list->SetPipelineState(m_pipeline_states.at(level_type)[1].Get());
 			else
 				command_list->SetPipelineState(m_pipeline_states.at(level_type)[1].Get());
 			command_list->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);

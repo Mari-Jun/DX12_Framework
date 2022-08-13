@@ -65,7 +65,10 @@ namespace client_fw
 		if (node->child_nodes[0] == nullptr)
 		{
 			for (const auto& render_cmp : node->render_components)
-				render_cmp->ResetLevelOfDetailForShadow();
+			{
+				if (render_cmp->GetRenderType() == eRenderType::kMesh)
+					render_cmp->ResetLevelOfDetailForShadow();
+			}
 			return;
 		}
 

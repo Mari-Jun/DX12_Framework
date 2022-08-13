@@ -262,7 +262,6 @@ namespace client_fw
 					device->CreateShaderResourceView(texture->GetResource(),
 						&TextureCreator::GetShaderResourceViewDescForCube(texture->GetResource()), cpu_handle);
 					texture->SetResourceIndex(index - START_INDEX_RENDER_CUBE_MAP_TEXTURE);
-					texture->SetGPUHandle(gpu_handle);
 					LOG_INFO("{0} - index [{1}]", texture->GetPath(), index);
 				});
 		}
@@ -450,7 +449,6 @@ namespace client_fw
 					device->CreateShaderResourceView(texture->GetResource(),
 						&TextureCreator::GetShaderResourceViewDescFor32DSVCube(texture->GetResource()), cpu_handle);
 					texture->SetResourceIndex(index - START_INDEX_RENDER_CUBE_MAP_TEXTURE);
-					texture->SetGPUHandle(gpu_handle);
 				});
 		}
 
@@ -471,7 +469,6 @@ namespace client_fw
 					device->CreateShaderResourceView(texture->GetResource(),
 						&TextureCreator::GetShaderResourceViewDescFor32DSVArray(texture->GetResource(), texture->GetArraySize()), cpu_handle);
 					texture->SetResourceIndex(index - START_INDEX_RENDER_ARRAY_TEXTURE);
-					texture->SetGPUHandle(gpu_handle);
 				});		
 		}
 
@@ -490,7 +487,6 @@ namespace client_fw
 					device->CreateShaderResourceView(texture->GetResource(),
 						&TextureCreator::GetShaderResourceViewDesc(texture->GetResource()), cpu_handle);
 					texture->SetResourceIndex(index);
-					texture->SetGPUHandle(gpu_handle);
 				});
 		}
 

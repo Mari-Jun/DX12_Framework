@@ -20,7 +20,6 @@ namespace client_fw
 	void MeshComponent::UpdateWorldMatrix()
 	{
 		RenderComponent::UpdateWorldMatrix();
-		m_world_transpose_matrix = mat4::Transpose(GetWorldMatrix());
 		m_world_inverse_matrix = mat4::InverseVec(GetWorldMatrix());
 	}
 
