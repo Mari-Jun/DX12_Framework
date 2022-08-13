@@ -142,6 +142,10 @@ namespace simulation
 				u8"기본적인 Lighting 효과들을 확인할 수 있습니다.",
 				u8"Light의 종류로는 Directional Light, Point Light, Spot Light가 있습니다."
 				});
+			m_select_level_layer->RegisterLevel<MultiplePointLightLevel>("Rendering/Lighting", {
+				u8"여러개의 Point light를 소환할 수 있는 레벨입니다.",
+				u8"프로그램의 Lighting 성능을 확인할 수 있습니다."
+				});
 
 			m_select_level_layer->RegisterLevel<BlurLevel>("Rendering/PostProcessing",{
 				u8"Gaussian blur를 사용한 blurring을 확인할 수 있습니다.",

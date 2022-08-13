@@ -1,7 +1,9 @@
 #include <include/client_core.h>
 #include <client/object/actor/static_mesh_actor.h>
-#include <client/object/actor/light.h>
+#include <client/object/actor/default_pawn.h>
+#include <client/util/octree/octree.h>
 
+#include "object/actor/light.h"
 #include "object/actor/local_rotating_cube.h"
 #include "object/actor/rotating_cube.h"
 #include "object/level/rendering/lighting/light_level.h"
@@ -225,5 +227,146 @@ namespace simulation
 		case 2: return m_spot_light3;
 		default: return nullptr;
 		}
+	}
+
+	UPtr<MultiplePointLightLevelInitNodeManager> MultiplePointLightLevel::s_init_node_manager = nullptr;
+	UPtr<MultiplePointLightLevelRuntimeNodeManager> MultiplePointLightLevel::s_runtime_node_manager = nullptr;
+
+	MultiplePointLightLevel::MultiplePointLightLevel()
+		: SimulationLevel("multiple point light level")
+	{
+		m_game_mode = CreateUPtr<ThirdGameMode>();
+		if (s_init_node_manager == nullptr)
+			s_init_node_manager = CreateUPtr<MultiplePointLightLevelInitNodeManager>();
+		if (s_runtime_node_manager == nullptr)
+			s_runtime_node_manager = CreateUPtr<MultiplePointLightLevelRuntimeNodeManager>();
+	}
+
+	bool MultiplePointLightLevel::Initialize()
+	{
+		bool ret = SimulationLevel::Initialize();
+
+		const bool use_shadow = s_init_node_manager->IsUseShadow();
+		const bool update_intensity = s_init_node_manager->IsUpdateIntensity();
+		const float offset = s_init_node_manager->GetOffset();
+		const int num_of_point_lights = s_init_node_manager->GetNumOfPointLights();
+		m_point_lights.reserve(num_of_point_lights * num_of_point_lights);
+
+		const float start_point = static_cast<float>(num_of_point_lights - 1) * -0.5f * offset;
+		for (int x = 0; x < num_of_point_lights; ++x)
+		{
+			const float new_x = start_point + x * offset;
+			for (int z = 0; z < num_of_point_lights; ++z)
+			{
+				const float new_z = start_point + z * offset;
+
+				SPtr<PointLight> point_light;
+				if (update_intensity)
+					point_light = CreateSPtr<IntensityPointLight>();
+				else
+					point_light = CreateSPtr<PointLight>();
+
+				Vec3 light_color;
+				switch (m_point_lights.size() % 7)
+				{
+				case 0: light_color = Vec3(1.f, 1.f, 1.f); break;
+				case 1: light_color = Vec3(1.f, 0.f, 0.f); break;
+				case 2: light_color = Vec3(0.f, 1.f, 0.f); break;
+				case 3: light_color = Vec3(0.f, 0.f, 1.f); break;
+				case 4: light_color = Vec3(0.f, 1.f, 1.f); break;
+				case 5: light_color = Vec3(1.f, 1.f, 0.f); break;
+				case 6: light_color = Vec3(1.f, 0.f, 1.f); break;
+				default: break;
+				}
+
+				point_light->SetLightColor(light_color);
+				point_light->SetLightIntensity(100'000);
+				if (use_shadow)
+				{
+					point_light->SetPosition(Vec3(new_x, 0.0f, new_z));
+					point_light->SetAttenuationRadius(offset);
+					point_light->SetShadowTextureSize(256);
+				}
+				else
+				{
+					point_light->SetPosition(Vec3(new_x, 0.0f, new_z));
+					point_light->SetAttenuationRadius(offset);
+					point_light->DisableShadow();
+				}
+
+				SpawnActor(point_light);
+				m_point_lights.emplace_back(point_light);
+			}
+		}
+
+		auto plane = CreateSPtr<StaticMeshActor>(eMobilityState::kStatic, "../Contents/plane.obj");
+		SpawnActor(plane);
+		plane->SetPosition(Vec3(0.0f, -offset * 0.5f, 0.0f));
+		plane->SetScale(static_cast<float>(num_of_point_lights) * offset / 100.f);
+
+		plane = CreateSPtr<StaticMeshActor>(eMobilityState::kStatic, "../Contents/plane.obj");
+		SpawnActor(plane);
+		plane->SetPosition(Vec3(0.0f, offset * 0.5f, 0.0f));
+		plane->SetRotation(math::ToRadian(180.f), 0.0f, 0.0f);
+		plane->SetScale(static_cast<float>(num_of_point_lights) * offset / 100.f);
+		
+		GetGameMode()->GetDefaultPawn()->SetPosition(Vec3(0.f, 0.f, start_point - 500.0f));
+
+		return ret;
+	}
+
+	void MultiplePointLightLevel::Shutdown()
+	{
+	}
+
+	void MultiplePointLightLevel::Update(float delta_time)
+	{
+	}
+
+	void MultiplePointLightLevel::SetLevelInitNodeOwner()
+	{
+		s_init_node_manager->SetOwner(std::static_pointer_cast<MultiplePointLightLevel>(shared_from_this()));
+	}
+
+	void MultiplePointLightLevel::ExecuteLevelInitNodes()
+	{
+		s_init_node_manager->ExecuteLevelSettingNodes();
+	}
+
+	void MultiplePointLightLevel::SetLevelRuntimeNodeOwner()
+	{
+		s_runtime_node_manager->SetOwner(std::static_pointer_cast<MultiplePointLightLevel>(shared_from_this()));
+	}
+
+	void MultiplePointLightLevel::ExecuteLevelRuntimeNodes()
+	{
+		s_runtime_node_manager->ExecuteLevelSettingNodes();
+	}
+
+	std::vector<SPtr<VisualOctree>> MultiplePointLightLevel::CreateVisualOctrees() const
+	{
+		const bool use_shadow = s_init_node_manager->IsUseShadow();
+		const float offset = s_init_node_manager->GetOffset();
+		const int num_of_point_lights = s_init_node_manager->GetNumOfPointLights();
+		float width = offset * num_of_point_lights;
+
+		const float octree_offset = offset * 200.f;
+		const int num_of_line = static_cast<int>(ceilf(width / octree_offset));
+		const float start_point = static_cast<float>(num_of_line - 1) * -0.5f * octree_offset;
+
+		std::vector<SPtr<VisualOctree>> visual_octrees;
+		for (int x = 0; x < num_of_line; ++x)
+		{
+			const float new_x = start_point + x * octree_offset;
+			for (int z = 0; z < num_of_line; ++z)
+			{
+				const float new_z = start_point + z * octree_offset;
+
+				LOG_INFO(Vec3(new_x, 0.f, new_z));
+				visual_octrees.emplace_back(CreateSPtr<VisualOctree>(width, Vec3(new_x, 0.0f, new_z), 3));
+			}
+		}
+
+		return visual_octrees;
 	}
 }

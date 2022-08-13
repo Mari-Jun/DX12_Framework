@@ -77,4 +77,44 @@ namespace simulation
 			{ "spot lights", LightLevelSpotLightFunc },
 			});
 	}
+
+	MultiplePointLightLevelInitNodeManager::MultiplePointLightLevelInitNodeManager()
+	{
+		static auto PointLightsFunc = [this](const SPtr<MultiplePointLightLevel>& level)
+		{
+			ImGui::Checkbox("enable shadow", &m_use_shadow);
+			ImGuiHelper::ShowInformationSameLine({ u8"Shadow를 사용하게 될 경우 소환 가능한 최대 Light수가 줄어듭니다." });
+
+			ImGui::Checkbox("update intensity", &m_update_intensity);
+			ImGuiHelper::ShowInformationSameLine({ u8"Update Intensity를 사용하게 될 경우 프레임이 떨어질 가능성이 높습니다." });
+
+			const int max_point_lights = m_use_shadow ? 30 : 300;
+			m_offset = 300.f;
+			if (m_use_shadow)
+			{
+				m_offset = 500.f;
+				m_num_of_point_lights = std::min(m_num_of_point_lights, 30);
+			}
+			ImGui::DragInt("num of point lights in a row", &m_num_of_point_lights, 1.0f, 1, max_point_lights, "%d", ImGuiSliderFlags_AlwaysClamp);
+			ImGuiHelper::ShowInformationSameLine({ u8"한줄에 있는 Point light의 수. (즉 소환되는 light의 수는 제곱)" });
+		};
+
+		RegisterSettingHeaderNode("Point lights setting", {
+			{ "lights setting", PointLightsFunc }
+			});
+	}
+
+	MultiplePointLightLevelRuntimeNodeManager::MultiplePointLightLevelRuntimeNodeManager()
+	{
+		static auto PointLightsFunc = [this](const SPtr<MultiplePointLightLevel>& level)
+		{
+			const auto& point_lights = level->GetPointLights();
+
+			ImGui::BulletText("num of point light : %d", point_lights.size());
+		};
+
+		RegisterSettingHeaderNode("Point lights", {
+			   { "light count", PointLightsFunc }
+			});
+	}
 }

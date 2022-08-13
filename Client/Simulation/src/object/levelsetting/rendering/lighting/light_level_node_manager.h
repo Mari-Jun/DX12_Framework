@@ -4,6 +4,7 @@
 namespace simulation
 {
     class LightLevel;
+    class MultiplePointLightLevel;
 
     class LightLevelInitNodeManager : public LevelNodeManager<LightLevel>
     {
@@ -27,6 +28,32 @@ namespace simulation
     public:
         LightLevelRuntimeNodeManager();
         virtual ~LightLevelRuntimeNodeManager() = default;
+    };
+
+    class MultiplePointLightLevelInitNodeManager : public LevelNodeManager<MultiplePointLightLevel>
+    {
+    public:
+        MultiplePointLightLevelInitNodeManager();
+        virtual ~MultiplePointLightLevelInitNodeManager() = default;
+
+    private:
+        INT m_num_of_point_lights = 50;
+        float m_offset = 500.f;
+        bool m_use_shadow = false;
+        bool m_update_intensity = false;
+
+    public:
+        INT GetNumOfPointLights() const { return m_num_of_point_lights; }
+        float GetOffset() const { return m_offset; }
+        bool IsUseShadow() const { return m_use_shadow; }
+        bool IsUpdateIntensity() const { return m_update_intensity; }
+    };
+
+    class MultiplePointLightLevelRuntimeNodeManager : public LevelNodeManager<MultiplePointLightLevel>
+    {
+    public:
+        MultiplePointLightLevelRuntimeNodeManager();
+        virtual ~MultiplePointLightLevelRuntimeNodeManager() = default;
     };
 }
 
