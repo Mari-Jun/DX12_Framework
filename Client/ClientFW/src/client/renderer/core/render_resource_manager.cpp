@@ -258,11 +258,10 @@ namespace client_fw
 			iter = std::find(iter, m_texture_usage.begin() + END_INDEX_EXTERNAL_CUBE_MAP_TEXTURE, false);
 
 			UpdateTextureResource<ExternalCubeMapTexture>(iter, texture, [device]
-			(auto index, const auto& texture, auto cpu_handle, auto gpu_handle) {
+			(auto index, const auto& texture, auto cpu_handle) {
 					device->CreateShaderResourceView(texture->GetResource(),
 						&TextureCreator::GetShaderResourceViewDescForCube(texture->GetResource()), cpu_handle);
 					texture->SetResourceIndex(index - START_INDEX_RENDER_CUBE_MAP_TEXTURE);
-					texture->SetGPUHandle(gpu_handle);
 					LOG_INFO("{0} - index [{1}]", texture->GetPath(), index);
 				});
 		}
@@ -425,11 +424,10 @@ namespace client_fw
 
 			iter = std::find(iter, m_texture_usage.begin() + END_INDEX_RENDER_TEXTURE, false);
 			UpdateTextureResource<Shadow2DTexture>(iter, texture, [device]
-			(auto index, const auto& texture, auto cpu_handle, auto gpu_handle) {
+			(auto index, const auto& texture, auto cpu_handle) {
 					device->CreateShaderResourceView(texture->GetResource(),
 						&TextureCreator::GetShaderResourceViewDescFor32DSV(texture->GetResource()), cpu_handle);
 					texture->SetResourceIndex(index);
-					texture->SetGPUHandle(gpu_handle);
 				});			
 		}
 
@@ -446,11 +444,10 @@ namespace client_fw
 
 			iter = std::find(iter, m_texture_usage.begin() + END_INDEX_RENDER_CUBE_MAP_TEXTURE, false);
 			UpdateTextureResource<ShadowCubeTexture>(iter, texture, [device]
-			(auto index, const auto& texture, auto cpu_handle, auto gpu_handle) {
+			(auto index, const auto& texture, auto cpu_handle) {
 					device->CreateShaderResourceView(texture->GetResource(),
 						&TextureCreator::GetShaderResourceViewDescFor32DSVCube(texture->GetResource()), cpu_handle);
 					texture->SetResourceIndex(index - START_INDEX_RENDER_CUBE_MAP_TEXTURE);
-					texture->SetGPUHandle(gpu_handle);
 				});
 		}
 
@@ -467,11 +464,10 @@ namespace client_fw
 
 			iter = std::find(iter, m_texture_usage.begin() + END_INDEX_RENDER_ARRAY_TEXTURE, false);
 			UpdateTextureResource<ShadowArrayTexture>(iter, texture, [device]
-			(auto index, const auto& texture, auto cpu_handle, auto gpu_handle) {
+			(auto index, const auto& texture, auto cpu_handle) {
 					device->CreateShaderResourceView(texture->GetResource(),
 						&TextureCreator::GetShaderResourceViewDescFor32DSVArray(texture->GetResource(), texture->GetArraySize()), cpu_handle);
 					texture->SetResourceIndex(index - START_INDEX_RENDER_ARRAY_TEXTURE);
-					texture->SetGPUHandle(gpu_handle);
 				});		
 		}
 
@@ -486,11 +482,10 @@ namespace client_fw
 		{
 			iter = std::find(iter, m_texture_usage.begin() + END_INDEX_RENDER_TEXT_TEXTURE, false);
 			UpdateTextureResource<RenderTextTexture>(iter, texture, [device]
-			(auto index, const auto& texture, auto cpu_handle, auto gpu_handle) {
+			(auto index, const auto& texture, auto cpu_handle) {
 					device->CreateShaderResourceView(texture->GetResource(),
 						&TextureCreator::GetShaderResourceViewDesc(texture->GetResource()), cpu_handle);
 					texture->SetResourceIndex(index);
-					texture->SetGPUHandle(gpu_handle);
 				});
 		}
 

@@ -40,6 +40,12 @@ namespace client_fw
 		SceneComponent::UpdateComponent(delta_time);
 	}
 
+	void RenderComponent::UpdateWorldMatrix()
+	{
+		SceneComponent::UpdateWorldMatrix();
+		m_world_transpose_matrix = mat4::Transpose(GetWorldMatrix());
+	}
+
 	bool RenderComponent::RegisterToRenderSystem()
 	{
 		return Render::RegisterRenderComponent(SharedFromThis(), m_draw_shader_name);

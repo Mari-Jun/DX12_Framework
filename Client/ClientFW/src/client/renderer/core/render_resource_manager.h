@@ -71,6 +71,22 @@ namespace client_fw
 		void UpdateTextureResource(ID3D12Device* device, ID3D12GraphicsCommandList* command_list);
 		template<class TextureType>
 		void UpdateTextureResource(std::array<bool, TEXTURE_RESOURCE_COUNT>::iterator iter, const SPtr<TextureType>& texture,
+			std::function<void(int, const SPtr<TextureType>, CD3DX12_CPU_DESCRIPTOR_HANDLE)> function)
+		{
+			UINT index = static_cast<UINT>(std::distance(m_texture_usage.begin(), iter));
+
+			CD3DX12_CPU_DESCRIPTOR_HANDLE cpu_handle(m_texture_desciptor_heap->GetCPUDescriptorHandleForHeapStart(),
+				index, D3DUtil::s_cbvsrvuav_descirptor_increment_size);
+
+			function(index, texture, cpu_handle);
+
+			texture->RegisterShutdownFunction([this, index]() {
+				m_texture_usage[index] = false;
+				});
+			m_texture_usage[index] = true;
+		}
+		template<class TextureType>
+		void UpdateTextureResource(std::array<bool, TEXTURE_RESOURCE_COUNT>::iterator iter, const SPtr<TextureType>& texture,
 			std::function<void(int, const SPtr<TextureType>, CD3DX12_CPU_DESCRIPTOR_HANDLE, CD3DX12_GPU_DESCRIPTOR_HANDLE)> function)
 		{
 			UINT index = static_cast<UINT>(std::distance(m_texture_usage.begin(), iter));

@@ -21,6 +21,7 @@ namespace client_fw
 		virtual bool InitializeComponent() override final;
 		virtual void ShutdownComponent() override final;
 		virtual void UpdateComponent(float delta_time) override final;
+		virtual void UpdateWorldMatrix() override;
 
 	public:
 		virtual void UpdateLevelOfDetail(const Vec3& eye) {}
@@ -32,6 +33,9 @@ namespace client_fw
 		virtual void UnregisterFromRenderSystem();
 		virtual void RegisterToVisualOctree();
 		virtual void UnregisterFromVisualOctree();
+
+	protected:
+		Mat4 m_world_transpose_matrix;
 
 	protected:
 		eRenderType m_type;
@@ -49,6 +53,8 @@ namespace client_fw
 	//
 	//  ↓ 사용자용 함수 O
 	//
+		const Mat4& GetWorldTransposeMatrix() const { return m_world_transpose_matrix; }
+
 		eRenderType GetRenderType() const { return m_type; }
 
 		bool IsHiddenInGame() const { return m_hidden_in_game; }

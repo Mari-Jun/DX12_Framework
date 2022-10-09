@@ -74,20 +74,26 @@ namespace client_fw
 			float near_z = render_camera->GetNearZ();
 			float far_z = m_cascade_far_z * m_cascade_level_ratio[s_max_cascade_level - 1];
 
-
 			Mat4 rc_cascade_projection = mat4::Perspective(field_of_view, aspect_ratio, near_z, far_z);
 			BFrustum bf_projection = BFrustum(rc_cascade_projection);
 			bf_projection.Transform(render_camera->GetInverseViewMatrix());
 
-			// render camera cascade boudning sphere volume
-			Vec3 sphere_center = render_camera->GetCameraPosition() + render_camera->GetCameraForward() * (near_z + 0.5f * (near_z + far_z));
+			const Vec3& cam_pos = render_camera->GetCameraPosition();
+			const Vec3& cam_forward = render_camera->GetCameraForward();
+			const Vec3& cam_right = render_camera->GetCameraRight();
+			const Vec3& cam_up = render_camera->GetCameraUp();
 
-			m_cascade_bounding_sphere = BSphere(bf_projection);
-			m_cascade_bounding_sphere.SetCenter(sphere_center);
-			float radius = m_cascade_bounding_sphere.GetRadius();
+			const float tan_fovx = tanf(render_camera->GetAspectRatio() * math::ToRadian(render_camera->GetFieldOfView()));
+			const float tan_fovy = tanf(render_camera->GetAspectRatio());
+
+			Vec3 sphere_center = cam_pos + cam_forward * (near_z + 0.5f * (near_z + far_z));
+			const Vec3 bound_span = cam_pos + (cam_right * -tan_fovx + cam_up * tan_fovy + cam_forward) * far_z - sphere_center;
+			float radius = bound_span.Length();
+
+			m_cascade_bounding_sphere = BSphere(sphere_center, radius);
 
 			// get projectoin matrix from bounding sphere
-			m_projection_matrix = mat4::Ortho(radius, radius, -radius, radius);
+			m_projection_matrix = mat4::Ortho(radius, radius, -radius * 0.5f, radius * 0.5f);
 
 			m_bf_projection = BFrustum(m_projection_matrix);
 			m_bounding_frustum.Transform(m_bf_projection, render_camera->GetInverseViewMatrix());
@@ -110,34 +116,51 @@ namespace client_fw
 		for (UINT i = 0; i < s_max_cascade_level; ++i)
 		{
 			Mat4 cascade_projection;
+			float near_z, far_z;
 
 			if (i == 0)
 			{
-				 cascade_projection = mat4::Perspective(math::ToRadian(render_camera->GetFieldOfView()),
-					render_camera->GetAspectRatio(), render_camera->GetNearZ(), m_cascade_far_z * m_cascade_level_ratio[i]);
+				near_z = render_camera->GetNearZ();
+				far_z = m_cascade_far_z * m_cascade_level_ratio[i];
 			}
 			else
 			{
-				cascade_projection = mat4::Perspective(math::ToRadian(render_camera->GetFieldOfView()),
-					render_camera->GetAspectRatio(), m_cascade_far_z * m_cascade_level_ratio[i - 1], m_cascade_far_z * m_cascade_level_ratio[i]);
+				near_z = m_cascade_far_z * m_cascade_level_ratio[i - 1];
+				far_z = m_cascade_far_z * m_cascade_level_ratio[i];
 			}
 
-			BFrustum bf_projection = BFrustum(cascade_projection);
-			bf_projection.Transform(
-				mat4::CreateRotationFromDirection(render_camera->GetCameraForward(),
-					render_camera->GetCameraRight(), render_camera->GetCameraUp()) *
-				mat4::CreateTranslation(render_camera->GetCameraPosition()));
-			bf_projection.Transform(m_view_projection_matrix);
+
+			std::array<Vec3, 8> frustum_points;
+
+			const Vec3& cam_pos = render_camera->GetCameraPosition();
+			const Vec3& cam_forward = render_camera->GetCameraForward();
+			const Vec3& cam_right = render_camera->GetCameraRight();
+			const Vec3& cam_up = render_camera->GetCameraUp();
+
+			const float tan_fovx = tanf(render_camera->GetAspectRatio() * math::ToRadian(render_camera->GetFieldOfView()));
+			const float tan_fovy = tanf(render_camera->GetAspectRatio());
+
+			frustum_points[0] = cam_pos + (cam_right * -tan_fovx + cam_up * tan_fovy + cam_forward) * near_z;
+			frustum_points[1] = cam_pos + (cam_right * tan_fovx + cam_up * tan_fovy + cam_forward) * near_z;
+			frustum_points[2] = cam_pos + (cam_right * tan_fovx - cam_up * tan_fovy + cam_forward) * near_z;
+			frustum_points[3] = cam_pos + (cam_right * -tan_fovx - cam_up * tan_fovy + cam_forward) * near_z;
+
+			frustum_points[4] = cam_pos + (cam_right * -tan_fovx + cam_up * tan_fovy + cam_forward) * far_z;
+			frustum_points[5] = cam_pos + (cam_right * tan_fovx + cam_up * tan_fovy + cam_forward) * far_z;
+			frustum_points[6] = cam_pos + (cam_right * tan_fovx - cam_up * tan_fovy + cam_forward) * far_z;
+			frustum_points[7] = cam_pos + (cam_right * -tan_fovx - cam_up * tan_fovy + cam_forward) * far_z;
 
 			Vec3 max_pos = Vec3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
 			Vec3 min_pos = Vec3(FLT_MAX, FLT_MAX, FLT_MAX);
 
-			for (const auto& corner : bf_projection.GetCorners())
+			for (auto& point : frustum_points)
 			{
+				point.TransformCoord(m_view_projection_matrix);
+
 				for (int j = 0; j < 3; ++j)
 				{
-					max_pos[j] = max(max_pos[j], corner[j]);
-					min_pos[j] = min(min_pos[j], corner[j]);
+					max_pos[j] = max(max_pos[j], point[j]);
+					min_pos[j] = min(min_pos[j], point[j]);
 				}
 			}
 

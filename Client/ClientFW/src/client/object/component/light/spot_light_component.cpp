@@ -42,6 +42,8 @@ namespace client_fw
 			m_world_matrix *= mat4::CreateRotationFromQuaternion(m_world_rotation);
 			m_world_matrix *= mat4::CreateTranslation(m_world_position);
 
+			m_world_transpose_matrix = mat4::Transpose(GetWorldMatrix());
+
 			UpdateOrientedBox();
 
 			m_is_updated_world_matrix = true;
@@ -58,6 +60,7 @@ namespace client_fw
 
 			m_shadow_camera->SetLocalPosition(m_local_position);
 			m_shadow_camera->SetLocalRotation(m_local_rotation);
+			m_shadow_camera->SetFieldOfView(math::ToDegrees(m_cone_outer_angle) * 2.0f);
 
 			UpdateWorldMatrix();
 		}
@@ -81,7 +84,6 @@ namespace client_fw
 	{
 		m_cone_inner_angle = math::ToRadian(degrees);
 		m_cone_outer_angle = max(m_cone_inner_angle, m_cone_outer_angle);
-		m_shadow_camera->SetFieldOfView(math::ToDegrees(m_cone_outer_angle) * 2.0f);
 		m_update_local_matrix = true;
 	}
 
@@ -89,7 +91,6 @@ namespace client_fw
 	{
 		m_cone_outer_angle = math::ToRadian(degrees);
 		m_cone_inner_angle = min(m_cone_inner_angle, m_cone_outer_angle);
-		m_shadow_camera->SetFieldOfView(degrees * 2.0f);
 		m_update_local_matrix = true;
 	}
 

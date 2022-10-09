@@ -35,7 +35,6 @@ namespace client_fw
 		UINT m_level_of_detail_for_shadow = 0;
 
 	private:
-		Mat4 m_world_transpose_matrix;
 		Mat4 m_world_inverse_matrix;
 
 	public:
@@ -46,7 +45,6 @@ namespace client_fw
 		UINT GetLevelOfDetail() const { return m_level_of_detail; }
 		void SetLevelOfDetail(UINT lod);
 		UINT GetLevelOfDetailForShadow() const { return m_level_of_detail_for_shadow; }
-		const Mat4& GetWorldTransposeMatrix() const { return m_world_transpose_matrix; }
 		const Mat4& GetWorldInverseMatrix() const { return m_world_inverse_matrix; }
 
 

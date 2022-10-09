@@ -11,6 +11,8 @@
 #include "object/level/rendering/basic/billboard_level.h"
 #include "object/level/rendering/basic/sky_level.h"
 
+#include "object/level/rendering/lighting/light_level.h"
+
 #include "object/level/rendering/postprocessing/blur_level.h"
 #include "object/level/rendering/postprocessing/sobel_edge_level.h"
 
@@ -134,6 +136,22 @@ namespace simulation
 			m_select_level_layer->RegisterLevel<SkyCubeLevel>("Rendering/Basic", {
 				u8"Sky Cube Texture를 설정할 수 있습니다.",
 				u8"Cube map texture가 아닌 texture를 불러오게 되면 프로그램이 강제 종료 됩니다."
+				});
+
+			m_select_level_layer->RegisterLevel<LightLevel>("Rendering/Lighting", {
+				u8"기본적인 Lighting 효과들을 확인할 수 있습니다.",
+				u8"Light의 종류로는 Directional Light, Point Light, Spot Light가 있습니다."
+				});
+			m_select_level_layer->RegisterLevel<MultiplePointLightLevel>("Rendering/Lighting", {
+				u8"여러개의 Point light를 소환할 수 있는 레벨입니다.",
+				u8"Point light는 움직이지 않는 Static객체입니다.",
+				u8"그림자 활성화/비활성화, 조명 세기 가변/불변 선택 가능합니다.",
+				u8"프로그램의 Lighting 성능을 확인할 수 있습니다."
+				});
+			m_select_level_layer->RegisterLevel<MultipleSpotLightLevel>("Rendering/Lighting", {
+				u8"여러개의 Spot light를 소환할 수 있는 레벨입니다.",
+				u8"Spot light는 움직이는 Movable객체입니다.",
+				u8"그림자 활성화/비활성화, 조명 세기 가변/불변 선택 가능합니다."
 				});
 
 			m_select_level_layer->RegisterLevel<BlurLevel>("Rendering/PostProcessing",{
