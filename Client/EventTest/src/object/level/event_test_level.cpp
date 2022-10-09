@@ -21,7 +21,7 @@ namespace event_test
 
 	bool EventTestLevel::Initialize()
 	{
-		auto sphere = CreateSPtr<StaticMeshActor>(eMobilityState::kStatic, "../Contents/sphere.obj");
+		auto sphere = CreateSPtr<StaticMeshActor>(eMobilityState::kStatic, "../Contents/Police.obj");
 		SpawnActor(sphere);
 		sphere->SetPosition(Vec3{ 300.0f, 0.0f, 1000.0f });
 		//sphere = CreateSPtr<StaticMeshActor>(eMobilityState::kStatic, "../Contents/sphere.obj");
@@ -36,15 +36,15 @@ namespace event_test
 		//sphere = CreateSPtr<StaticMeshActor>(eMobilityState::kStatic, "../Contents/sphere.obj");
 		//SpawnActor(sphere);
 		//sphere->SetPosition(Vec3{ 300.0f, 30.0f, 1000.0f });
-		sphere = CreateSPtr<StaticMeshActor>(eMobilityState::kStatic, "../Contents/Castle/SiegeRam.obj");
+		sphere = CreateSPtr<StaticMeshActor>(eMobilityState::kStatic, "../Contents/Police.fbx");
 		SpawnActor(sphere);
 		sphere->SetPosition(Vec3{ -1000.0f, 60.0f, 1000.0f });
 		sphere->SetScale(0.5f);
 
-		sphere = CreateSPtr<StaticMeshActor>(eMobilityState::kStatic, "../Contents/penguin.obj");
+		/*sphere = CreateSPtr<StaticMeshActor>(eMobilityState::kStatic, "../Contents/penguin.fbx");
 		SpawnActor(sphere);
 		sphere->SetPosition(Vec3{ 1500.0f, 0.0f, 1500.0f });
-		sphere->SetScale(200.0f);
+		sphere->SetScale(200.0f);*/
 
 		auto cube = CreateSPtr<RotatingCube>();
 		SpawnActor(cube);

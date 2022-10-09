@@ -4,6 +4,8 @@
 #include "client/asset/mesh/mesh.h"
 #include "client/object/component/mesh/core/mesh_component.h"
 
+#include <assimp/scene.h>
+
 namespace client_fw
 {
 	SPtr<Mesh> AssetStore::LoadMesh(const std::string& path)
@@ -24,6 +26,11 @@ namespace client_fw
 	std::map<std::string, SPtr<Material>> AssetStore::LoadMaterials(const std::string& path)
 	{
 		return s_asset_manager->LoadMaterials(path);
+	}
+
+	std::map<std::string, SPtr<Material>> AssetStore::LoadMaterials(const std::string& path, const aiScene* scene)
+	{
+		return s_asset_manager->LoadMaterials(path, scene);
 	}
 
 	SPtr<ExternalTexture> AssetStore::LoadTexture(const std::string& path)

@@ -10,6 +10,7 @@
 #include "client/asset/texture/texture_loader.h"
 #include "client/renderer/core/render_resource_manager.h"
 
+#include <assimp/scene.h>
 
 namespace client_fw
 {
@@ -126,6 +127,23 @@ namespace client_fw
 			}
 		}
 			
+		return materials;
+	}
+
+	std::map<std::string, SPtr<Material>> AssetManager::LoadMaterials(const std::string& path, const aiScene* scene)
+	{
+		std::map<std::string, SPtr<Material>> materials = m_material_loader->LoadMaterialFromAssimp(path, scene);
+
+		for (const auto& [name, material] : materials)
+		{
+			if (m_asset_caches[eAssetType::kMaterial].find(material->GetPath()) ==
+				m_asset_caches[eAssetType::kMaterial].cend())
+			{
+				m_asset_caches[eAssetType::kMaterial].emplace(material->GetPath(), material);
+				RenderResourceManager::GetRenderResourceManager().RegisterMaterial(material);
+			}
+		}
+
 		return materials;
 	}
 

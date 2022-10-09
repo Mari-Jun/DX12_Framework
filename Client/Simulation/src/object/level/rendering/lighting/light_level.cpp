@@ -505,7 +505,7 @@ namespace simulation
 		{
 			const float new_z = width * 0.5f + z * octree_offset;
 
-			LOG_INFO(Vec3(new_x, 0.f, new_z));
+			//LOG_INFO(Vec3(new_x, 0.f, new_z));
 			visual_octrees.emplace_back(CreateSPtr<VisualOctree>(width, Vec3(0.0f, 0.0f, new_z), 3));
 		}
 

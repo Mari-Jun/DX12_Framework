@@ -21,10 +21,19 @@ project "ClientFW"
 	{
 		"src",
 		"vendor/spdlog/include",
+		"vendor/assimp/include",
+		"vendor/assimp/build/include",
 	}
 
 	links
 	{
+		"vendor/assimp/build/bin/Debug/assimp-vc143-mtd.dll",
+		"vendor/assimp/build/lib/Debug/assimp-vc143-mtd.lib",
+	}
+
+	debugenvs
+	{
+		"vendor/assimp/build/bin/Debug/assimp-vc143-mtd.dll",
 	}
 
 	filter "system:windows"

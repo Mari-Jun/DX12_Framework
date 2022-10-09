@@ -11,7 +11,7 @@
 namespace event_test
 {
 	RotatingCube::RotatingCube()
-		: StaticMeshActor(eMobilityState::kMovable, "../Contents/bricks_cube.obj")
+		: StaticMeshActor(eMobilityState::kMovable, "../Contents/bricks_cube.fbx")
 	{
 		m_ui_layer = CreateSPtr<EnemyInfoUILayer>();
 		m_rotating_component = CreateSPtr<RotatingMovementComponent>();

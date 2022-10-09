@@ -8,6 +8,11 @@
 #include "client/physics/core/bounding_mesh.h"
 #include "client/physics/collision/mesh_bounding_tree.h"
 
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+#include <assimp/cimport.h>
+#include <assimp/version.h>
+
 namespace client_fw
 {
 	SPtr<Mesh> MeshLoader::LoadMesh(const std::string& path, const std::string& extension) const
@@ -16,8 +21,13 @@ namespace client_fw
 
 		switch (HashCode(extension.c_str()))
 		{
+			//mesh = LoadObj(path, extension);
+			//break;
 		case HashCode(".obj"):
-			mesh = LoadObj(path, extension);
+		case HashCode(".fbx"):
+		case HashCode(".glb"):
+		case HashCode(".gltf"):
+			mesh = LoadStaticMeshFromAssimp(path, extension);
 			break;
 		default:
 			LOG_ERROR("Files in {0} format cannot be supported", extension);
@@ -245,6 +255,82 @@ namespace client_fw
 				break;
 		}
 
+		return mesh;
+	}
+
+	SPtr<StaticMesh> MeshLoader::LoadStaticMeshFromAssimp(const std::string& path, const std::string& extension) const
+	{
+		UINT flag = aiProcess_Triangulate | aiProcess_GenNormals | aiProcess_GenUVCoords | aiProcess_CalcTangentSpace |
+			aiProcess_FlipUVs | aiProcess_FlipWindingOrder;
+		const aiScene* scene = aiImportFile(path.c_str(), flag);
+
+		if (scene == nullptr || scene->HasMeshes() == false)
+		{
+			LOG_ERROR("Could not find path : [{0}]", path);
+			return nullptr;
+		}
+
+		/*LOG_INFO("Num Meshes : {0}, Num Materials : {1}", scene->mNumMeshes, scene->mNumMaterials);
+		for (int i = 0; i < scene->mNumMaterials; ++i)
+		{
+			LOG_INFO("Material {0} : {1}", i, scene->mMaterials[i]->GetName().C_Str());
+		}*/
+
+		std::map<std::string, SPtr<Material>> materials = AssetStore::LoadMaterials(path, scene);
+		std::string parent_path = file_help::GetParentPathFromPath(path);
+		std::string stem = file_help::GetStemFromPath(path);
+
+		UINT lod = 0;
+		SPtr<StaticMesh> mesh = CreateSPtr<StaticMesh>();
+
+		mesh->CreateDataForLodMesh(lod);
+
+		UINT vertex_count = 0;
+
+		std::vector<Vec3> positions;
+		std::vector<TextureLightNormalMapVertex> vertices;
+
+		for (int i = 0; i < scene->mNumMeshes; ++i)
+		{
+			const aiMesh* ai_mesh = scene->mMeshes[i];
+			//LOG_INFO("Mesh name : {0}, count : {1}", ai_mesh->mName.C_Str(), ai_mesh->mNumVertices);
+			//LOG_INFO("Material : {0}", scene->mMaterials[ai_mesh->mMaterialIndex]->GetName().C_Str());
+
+			for (UINT v_index = 0; v_index < ai_mesh->mNumVertices; ++v_index)
+			{
+				TextureLightNormalMapVertex vertex;
+				Vec3 position = Vec3{ ai_mesh->mVertices[v_index].x, ai_mesh->mVertices[v_index].y, ai_mesh->mVertices[v_index].z };
+				Vec3 normal = Vec3{ ai_mesh->mNormals[v_index].x,ai_mesh->mNormals[v_index].y,ai_mesh->mNormals[v_index].z };
+				Vec2 texcoord = Vec2{ ai_mesh->mTextureCoords[0][v_index].x, ai_mesh->mTextureCoords[0][v_index].y };
+				Vec3 tangent = Vec3{ ai_mesh->mTangents[v_index].x,ai_mesh->mTangents[v_index].y, ai_mesh->mTangents[v_index].z };
+				Vec3 bitangent = Vec3{ ai_mesh->mBitangents[v_index].x, ai_mesh->mBitangents[v_index].y, ai_mesh->mBitangents[v_index].z };
+
+				positions.emplace_back(position);
+				vertex.SetPosition(std::move(position));
+				vertex.SetNormal(std::move(normal));
+				vertex.SetTexCoord(std::move(texcoord));
+				vertex.SetTangent(std::move(tangent));
+				vertex.SetBitangent(std::move(bitangent));
+				vertices.emplace_back(std::move(vertex));
+			}
+
+			mesh->AddMeshVertexInfo(lod, { ai_mesh->mNumVertices, vertex_count });
+			mesh->AddMaterial(lod, std::move(materials[scene->mMaterials[ai_mesh->mMaterialIndex]->GetName().C_Str()]));
+
+			vertex_count += ai_mesh->mNumVertices;
+		}
+
+		const auto& vertex_info = mesh->GetVertexInfo(lod);
+		if (vertex_info->CreateVertexBlob<TextureLightNormalMapVertex>(vertex_count) == false)
+		{
+			LOG_ERROR("Could not create blob for vertex");
+			return nullptr;
+		}
+		vertex_info->CopyData(vertices.data(), vertex_count);
+
+		BOrientedBox box = BOrientedBox(std::move(positions));
+		mesh->SetOrientBox(box);
+		
 		return mesh;
 	}
 }

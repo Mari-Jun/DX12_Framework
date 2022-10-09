@@ -16,6 +16,7 @@ namespace client_fw
 		virtual SPtr<Mesh> LoadMesh(const std::string& path, const std::string& extension) const;
 
 		virtual SPtr<StaticMesh> LoadObj(const std::string& path, const std::string& extension) const;
+		virtual SPtr<StaticMesh> LoadStaticMeshFromAssimp(const std::string& path, const std::string& extension) const;
 	};
 }
 

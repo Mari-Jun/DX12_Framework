@@ -1,5 +1,7 @@
 #pragma once
 
+struct aiScene;
+
 namespace client_fw
 {
 	class Asset;
@@ -52,6 +54,7 @@ namespace client_fw
 		SPtr<Material> LoadMaterial(const std::string& mtl_path);
 		SPtr<Material> LoadMaterial(const std::string& path, const std::string& mtl_name);
 		std::map<std::string, SPtr<Material>> LoadMaterials(const std::string& path);
+		std::map<std::string, SPtr<Material>> LoadMaterials(const std::string& path, const aiScene* scene);
 		SPtr<ExternalTexture> LoadTexture(const std::string& path);
 		SPtr<ExternalCubeMapTexture> LoadCubeMapTexture(const std::string& path);
 	};

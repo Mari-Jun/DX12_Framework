@@ -28,7 +28,7 @@ namespace event_test
 		ret &= mesh->SetMesh("../Contents/penguin.obj");
 		mesh->SetCollisionInfo(true, false, "player", { "sphere" }, true);
 		mesh->SetLocalScale(10.0f);
-		mesh->SetLocalRotation(quat::CreateQuaternionFromAxis(vec3::AXIS_Y, math::ToRadian(180.0f)));
+		//mesh->SetLocalRotation(quat::CreateQuaternionFromAxis(vec3::AXIS_Y, math::ToRadian(180.0f)));
 		ret &= AttachComponent(mesh);
 
 		//auto sphere = CreateSPtr<BoxComponent>(Vec3(100.0f, 100.0f, 100.0f));

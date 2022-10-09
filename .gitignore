@@ -402,6 +402,7 @@ MigrationBackup/
 Client/bin-int/
 Client/Contents/
 Client/**/Contents/
+Client/**/vendor/
 **Server/bin/
 !Server/vendor/premake/bin/
 Server/bin-int/

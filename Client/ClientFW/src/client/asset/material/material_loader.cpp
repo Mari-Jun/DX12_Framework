@@ -5,6 +5,11 @@
 #include "client/asset/core/asset_manager.h"
 #include "client/asset/core/asset_store.h"
 
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+#include <assimp/cimport.h>
+#include <assimp/version.h>
+
 namespace client_fw
 {
 	std::map<std::string, SPtr<Material>> MaterialLoader::LoadMaterials(const std::string& path, const std::string& extension) const
@@ -123,6 +128,54 @@ namespace client_fw
 			}
 
 			AddMaterial();
+		}
+
+		return materials;
+	}
+
+	std::map<std::string, SPtr<Material>> MaterialLoader::LoadMaterialFromAssimp(const std::string& path, const aiScene* scene)
+	{
+		std::map<std::string, SPtr<Material>> materials;
+
+		std::string parent_path = file_help::GetParentPathFromPath(path);
+
+		for (UINT m_index = 0; m_index < scene->mNumMaterials; ++m_index)
+		{
+			const aiMaterial* ai_material = scene->mMaterials[m_index];
+
+			std::string mtl_path = parent_path + "/" + ai_material->GetName().C_Str() + ".mtl";
+
+			SPtr<Material> material = AssetStore::LoadMaterial(mtl_path);
+
+			if (material == nullptr)
+			{
+				material = CreateSPtr<Material>();
+				material->SetAssetInfo({ ai_material->GetName().C_Str(), mtl_path, ".mtl" });
+
+				aiColor4D diffuse;
+				if (aiGetMaterialColor(ai_material, AI_MATKEY_COLOR_DIFFUSE, &diffuse) == aiReturn_SUCCESS)
+				{
+					Vec4 color{ diffuse.r, diffuse.g, diffuse.b, diffuse.a };
+					material->SetBaseColor(color);
+				}
+
+				aiString texture_path;
+				if (aiGetMaterialTexture(ai_material, aiTextureType_DIFFUSE, 0, &texture_path) == aiReturn_SUCCESS)
+				{
+					SPtr<ExternalTexture> diffuse_texture = AssetStore::LoadTexture(parent_path + "/" + texture_path.C_Str());
+					if (diffuse_texture != nullptr)
+						material->SetDiffuseTexture(diffuse_texture);
+				}
+
+				if (aiGetMaterialTexture(ai_material, aiTextureType_NORMALS, 0, &texture_path) == aiReturn_SUCCESS)
+				{
+					SPtr<ExternalTexture> normal_texture = AssetStore::LoadTexture(parent_path + "/" + texture_path.C_Str());
+					if (normal_texture != nullptr)
+						material->SetNormalTexture(normal_texture);
+				}
+			}
+
+			materials.emplace(material->GetName(), material);
 		}
 
 		return materials;

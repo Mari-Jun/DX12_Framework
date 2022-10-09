@@ -6,7 +6,7 @@
 namespace event_test
 {
 	LocalRotatingCube::LocalRotatingCube()
-		: StaticMeshActor(eMobilityState::kMovable, "../Contents/bricks_cube.obj")
+		: StaticMeshActor(eMobilityState::kMovable, "../Contents/bricks_cube.fbx")
 	{
 		m_rotating_component = CreateSPtr<RotatingMovementComponent>();
 	}

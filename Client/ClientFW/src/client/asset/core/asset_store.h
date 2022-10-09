@@ -1,5 +1,7 @@
 #pragma once
 
+struct aiScene;
+
 namespace client_fw
 {
 	class AssetManager;
@@ -23,6 +25,8 @@ namespace client_fw
 		//if .mtl file (releative path) 
 		//return value (mtl name, mtl name's material)
 		static std::map<std::string, SPtr<Material>> LoadMaterials(const std::string& path);
+
+		static std::map<std::string, SPtr<Material>> LoadMaterials(const std::string& path, const aiScene* scene);
 
 		static SPtr<ExternalTexture> LoadTexture(const std::string& path);
 		static SPtr<ExternalCubeMapTexture> LoadCubeMapTexture(const std::string& path);
