@@ -261,7 +261,7 @@ namespace client_fw
 	SPtr<StaticMesh> MeshLoader::LoadStaticMeshFromAssimp(const std::string& path, const std::string& extension) const
 	{
 		UINT flag = aiProcess_Triangulate | aiProcess_GenNormals | aiProcess_GenUVCoords | aiProcess_CalcTangentSpace |
-			aiProcess_FlipUVs | aiProcess_FlipWindingOrder;
+			aiProcess_FlipUVs | aiProcess_FlipWindingOrder | aiProcess_OptimizeMeshes | aiProcess_SortByPType;
 		const aiScene* scene = aiImportFile(path.c_str(), flag);
 
 		if (scene == nullptr || scene->HasMeshes() == false)
@@ -276,60 +276,76 @@ namespace client_fw
 			LOG_INFO("Material {0} : {1}", i, scene->mMaterials[i]->GetName().C_Str());
 		}*/
 
-		std::map<std::string, SPtr<Material>> materials = AssetStore::LoadMaterials(path, scene);
 		std::string parent_path = file_help::GetParentPathFromPath(path);
 		std::string stem = file_help::GetStemFromPath(path);
 
 		UINT lod = 0;
 		SPtr<StaticMesh> mesh = CreateSPtr<StaticMesh>();
 
-		mesh->CreateDataForLodMesh(lod);
-
-		UINT vertex_count = 0;
-
-		std::vector<Vec3> positions;
-		std::vector<TextureLightNormalMapVertex> vertices;
-
-		for (int i = 0; i < scene->mNumMeshes; ++i)
+		while (lod < 5)
 		{
-			const aiMesh* ai_mesh = scene->mMeshes[i];
-			//LOG_INFO("Mesh name : {0}, count : {1}", ai_mesh->mName.C_Str(), ai_mesh->mNumVertices);
-			//LOG_INFO("Material : {0}", scene->mMaterials[ai_mesh->mMaterialIndex]->GetName().C_Str());
+			std::map<std::string, SPtr<Material>> materials = AssetStore::LoadMaterials(path, scene);
+			mesh->CreateDataForLodMesh(lod);
 
-			for (UINT v_index = 0; v_index < ai_mesh->mNumVertices; ++v_index)
+			UINT vertex_count = 0;
+
+			std::vector<Vec3> positions;
+			std::vector<TextureLightNormalMapVertex> vertices;
+
+			for (int i = 0; i < scene->mNumMeshes; ++i)
 			{
-				TextureLightNormalMapVertex vertex;
-				Vec3 position = Vec3{ ai_mesh->mVertices[v_index].x, ai_mesh->mVertices[v_index].y, ai_mesh->mVertices[v_index].z };
-				Vec3 normal = Vec3{ ai_mesh->mNormals[v_index].x,ai_mesh->mNormals[v_index].y,ai_mesh->mNormals[v_index].z };
-				Vec2 texcoord = Vec2{ ai_mesh->mTextureCoords[0][v_index].x, ai_mesh->mTextureCoords[0][v_index].y };
-				Vec3 tangent = Vec3{ ai_mesh->mTangents[v_index].x,ai_mesh->mTangents[v_index].y, ai_mesh->mTangents[v_index].z };
-				Vec3 bitangent = Vec3{ ai_mesh->mBitangents[v_index].x, ai_mesh->mBitangents[v_index].y, ai_mesh->mBitangents[v_index].z };
+				const aiMesh* ai_mesh = scene->mMeshes[i];
+				//LOG_INFO("Mesh name : {0}, count : {1}", ai_mesh->mName.C_Str(), ai_mesh->mNumVertices);
+				//LOG_INFO("Material : {0}", scene->mMaterials[ai_mesh->mMaterialIndex]->GetName().C_Str());
 
-				positions.emplace_back(position);
-				vertex.SetPosition(std::move(position));
-				vertex.SetNormal(std::move(normal));
-				vertex.SetTexCoord(std::move(texcoord));
-				vertex.SetTangent(std::move(tangent));
-				vertex.SetBitangent(std::move(bitangent));
-				vertices.emplace_back(std::move(vertex));
+				for (UINT v_index = 0; v_index < ai_mesh->mNumVertices; ++v_index)
+				{
+					TextureLightNormalMapVertex vertex;
+					Vec3 position = Vec3{ ai_mesh->mVertices[v_index].x, ai_mesh->mVertices[v_index].y, ai_mesh->mVertices[v_index].z };
+					Vec3 normal = Vec3{ ai_mesh->mNormals[v_index].x,ai_mesh->mNormals[v_index].y,ai_mesh->mNormals[v_index].z };
+					Vec2 texcoord = Vec2{ ai_mesh->mTextureCoords[0][v_index].x, ai_mesh->mTextureCoords[0][v_index].y };
+					Vec3 tangent = Vec3{ ai_mesh->mTangents[v_index].x,ai_mesh->mTangents[v_index].y, ai_mesh->mTangents[v_index].z };
+					Vec3 bitangent = Vec3{ ai_mesh->mBitangents[v_index].x, ai_mesh->mBitangents[v_index].y, ai_mesh->mBitangents[v_index].z };
+
+					positions.emplace_back(position);
+					vertex.SetPosition(std::move(position));
+					vertex.SetNormal(std::move(normal));
+					vertex.SetTexCoord(std::move(texcoord));
+					vertex.SetTangent(std::move(tangent));
+					vertex.SetBitangent(std::move(bitangent));
+					vertices.emplace_back(std::move(vertex));
+				}
+
+				mesh->AddMeshVertexInfo(lod, { ai_mesh->mNumVertices, vertex_count });
+				mesh->AddMaterial(lod, std::move(materials[scene->mMaterials[ai_mesh->mMaterialIndex]->GetName().C_Str()]));
+
+				vertex_count += ai_mesh->mNumVertices;
 			}
 
-			mesh->AddMeshVertexInfo(lod, { ai_mesh->mNumVertices, vertex_count });
-			mesh->AddMaterial(lod, std::move(materials[scene->mMaterials[ai_mesh->mMaterialIndex]->GetName().C_Str()]));
+			//LOG_INFO("Vertex count : {0}", vertex_count);
 
-			vertex_count += ai_mesh->mNumVertices;
+			const auto& vertex_info = mesh->GetVertexInfo(lod);
+			if (vertex_info->CreateVertexBlob<TextureLightNormalMapVertex>(vertex_count) == false)
+			{
+				LOG_ERROR("Could not create blob for vertex");
+				return nullptr;
+			}
+			vertex_info->CopyData(vertices.data(), vertex_count);
+
+			if (lod == 0)
+			{
+				BOrientedBox box = BOrientedBox(std::move(positions));
+				mesh->SetOrientBox(box);
+			}
+
+			++lod;
+
+			std::string lod_path = parent_path + "/" + stem + "_lod" + std::to_string(lod) + extension;
+			scene = aiImportFile(lod_path.c_str(), flag);
+
+			if (scene == nullptr || scene->HasMeshes() == false)
+				break;
 		}
-
-		const auto& vertex_info = mesh->GetVertexInfo(lod);
-		if (vertex_info->CreateVertexBlob<TextureLightNormalMapVertex>(vertex_count) == false)
-		{
-			LOG_ERROR("Could not create blob for vertex");
-			return nullptr;
-		}
-		vertex_info->CopyData(vertices.data(), vertex_count);
-
-		BOrientedBox box = BOrientedBox(std::move(positions));
-		mesh->SetOrientBox(box);
 		
 		return mesh;
 	}
